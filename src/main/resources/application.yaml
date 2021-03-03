@@ -1,0 +1,25 @@
+server:
+  port: 9091
+
+spring:
+  datasource:
+    #表明使用的数据库平台是 sqlite
+    platform: sqlite
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:DimLight.db
+    username: admin
+    password: 123456
+
+    # MySQL database configuration.
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://127.0.0.1:3306/halodb?characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+#    username: root
+#    password: 123456
+  jpa:
+    hibernate:
+      # 注意这个 auto 的取值
+      # https://blog.csdn.net/qq_36666651/article/details/80719259
+      ddl-auto: update
+    # 数据库方言配置
+    database-platform: com.highestpeak.dimlight.config.SQLiteDialect
+    show-sql: true
