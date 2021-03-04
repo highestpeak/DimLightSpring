@@ -28,11 +28,20 @@ public class RSSSourceApiController {
         ErrorMessages msg = rssSourceService.newRSSSource(rssSourceParams);
 
         if (rssSourceParams.isCreateTask()){
-            ErrorMessages taskMsg = taskService.saveRSSTask(rssSourceParams.getTaskParams());
+            ErrorMessages taskMsg = taskService.saveRSSTask(rssSourceParams,rssSourceParams.getTaskParams());
             msg.mergeMsg(taskMsg);
         }
 
         return msg;
+    }
+
+    /**
+     * todo 删除和更新应该同时更新正在允许的job和task
+     * @return
+     */
+    @DeleteMapping("del")
+    public Object delRSSSource(){
+        return null;
     }
 
     // 更新的时候也传过来 params 对象， 但是 id 另外传过来一个参数 学习
