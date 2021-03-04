@@ -69,8 +69,8 @@ public class RSSSourceParams implements InputConverter<RSSSource> {
     public RSSSource convertTo() {
         RSSSource rssSource = InputConverter.super.convertTo();
         RSSXml rssXml = RSSUtils.getRSSXml(rssSource.getUrl());
-        rssSource.setTitleParse(rssXml.get("title"));
-        rssSource.setDescParse(rssXml.get("desc"));
+        rssSource.setTitleParse(rssXml.getTitle());
+        rssSource.setDescParse(rssXml.getDescription());
         return rssSource;
     }
 }

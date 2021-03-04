@@ -28,7 +28,7 @@ public class RSSSourceApiController {
         ErrorMessages msg = rssSourceService.newRSSSource(rssSourceParams);
 
         if (rssSourceParams.isCreateTask()){
-            ErrorMessages taskMsg = taskService.saveRSSTask(rssSourceParams.getTaskParams());
+            ErrorMessages taskMsg = taskService.saveRSSTask(rssSourceParams,rssSourceParams.getTaskParams());
             msg.mergeMsg(taskMsg);
         }
 

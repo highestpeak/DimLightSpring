@@ -1,14 +1,22 @@
 package com.highestpeak.dimlight.service;
 
+import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.Task;
+import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.model.params.TaskParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.repository.TaskRepository;
+import com.highestpeak.dimlight.service.job.SimpleRSSJob;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
+
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author highestpeak
@@ -25,8 +33,9 @@ public class TaskService {
      */
 
     public static final String SAVE_TASK_ERROR_MSG = "保存 Task 时发生错误;TaskService:saveRSSTask(..)";
+    public static final String START_RSS_TASK_ERROR_MSG = "启动 RSSTask 时发生错误;TaskService:saveRSSTask(..)";
 
-    public ErrorMessages saveRSSTask(TaskParams taskParams){
+    public ErrorMessages saveRSSTask(RSSSourceParams rssSourceParams, TaskParams taskParams){
         ErrorMessages msg = new ErrorMessages();
 
         // 创建 task 保存到数据库
@@ -39,8 +48,12 @@ public class TaskService {
 
         // 启动 task
         if (taskParams.isStartTask() && msg.hasNoError()){
-            ErrorMessages startMsg = startRSSTask(savedTask);
-            msg.mergeMsg(startMsg);
+            try {
+                ErrorMessages startMsg = startRSSTask(savedTask,rssSourceParams.convertTo());
+                msg.mergeMsg(startMsg);
+            } catch (SchedulerException e) {
+                msg.addMsg(ErrorMessages.buildExceptionMsg(START_RSS_TASK_ERROR_MSG,e));
+            }
         }
 
         return msg;
@@ -58,7 +71,34 @@ public class TaskService {
      * 是简单的启动已有的 task
      * @param task 数据库中查询出来的 task
      */
-    public ErrorMessages startRSSTask(Task task){
+    public ErrorMessages startRSSTask(Task task, RSSSource rssSource) throws SchedulerException {
+        // todo 这个是不是应该在全局
+        SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = schedulerFactory.getScheduler();
+        scheduler.start();
+
+        // define the job and tie it to our HelloJob class
+        // todo 任务内容
+        JobDetail job = newJob(SimpleRSSJob.class)
+                .withIdentity("myJob", "rssTask")
+                // todo 把 simple rss job 需要的参数传进去
+                .usingJobData("rssSource",rssSource)
+                .build();
+
+        // Trigger the job to run now, and then every 40 seconds
+        // todo 设置触发参数 corn定时器 task 在此使用
+        Trigger trigger = newTrigger()
+                .withIdentity("myTrigger", "rssTaskTrigger")
+                .startNow()
+                .withSchedule(simpleSchedule()
+                        .withIntervalInSeconds(40)
+                        .repeatForever())
+                .build();
+        // scheduler.shutdown();
+
+        // Tell quartz to schedule the job using our trigger
+        scheduler.scheduleJob(job, trigger);
         return null;
     }
+
 }

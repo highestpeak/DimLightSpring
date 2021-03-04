@@ -2,6 +2,7 @@ package com.highestpeak.dimlight.model.pojo;
 
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,7 +19,11 @@ public class RSSXml {
     private String description;
     private String link;
     private String copyright;
-    private String pubDate;
+
+    /**
+     * todo 时区问题
+     */
+    private Date pubDate;
     private String ttl;
     private RSSXmlImage image;
     private String language;
@@ -44,11 +49,15 @@ public class RSSXml {
     @AllArgsConstructor
     public static class RSSXmlItem{
         private String title;
+        /**
+         * todo: 有的 entry 的 description 包含 image 标签 这个需要在呈现端即android上呈现出来
+         *  https://rsshub.app/bilibili/bangumi/media/9192 例如这个就有
+         */
         private String description;
         private String link;
         private String guid;
-        private String pubDate;
-        private String category;
+        private Date pubDate;
+        private List<String> category;
         private String author;
         private String comments;
     }
