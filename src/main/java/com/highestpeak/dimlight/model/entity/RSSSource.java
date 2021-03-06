@@ -10,7 +10,7 @@ import java.util.List;
  * @author highestpeak
  * RSS来源(可以添加的RSS订阅)（用户可控的）
  */
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
+@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_source")
 @Table(name = "rss_source", indexes = {
         @Index(name = "rss_source_generator", columnList = "generator"),
@@ -19,6 +19,7 @@ import java.util.List;
 @Builder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 public class RSSSource extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")
@@ -73,6 +74,13 @@ public class RSSSource extends BaseEntity {
      */
     @Column(name = "json_optional_extra_fields")
     private String jsonOptionalExtraFields;
+
+    /**
+     * 当可以 fetch 并且 huginn 设定了定时任务时
+     * 才会触发
+     */
+    @Column(name = "fetch_able", nullable = false)
+    private boolean fetchAble;
 
     /**
      * 由这个源生成的内容项

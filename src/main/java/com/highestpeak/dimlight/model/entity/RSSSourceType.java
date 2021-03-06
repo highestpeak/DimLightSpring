@@ -3,6 +3,7 @@ package com.highestpeak.dimlight.model.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class RSSSourceType implements Comparable<RSSSourceType> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

@@ -2,6 +2,7 @@ package com.highestpeak.dimlight.model.entity;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -18,6 +19,7 @@ import java.util.Date;
         @Index(name = "rss_content_item_title", columnList = "title_parse")})
 @Data
 @Builder
+@NoArgsConstructor
 public class RSSContentItem{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

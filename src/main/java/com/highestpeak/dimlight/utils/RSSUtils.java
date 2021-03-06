@@ -37,13 +37,13 @@ public class RSSUtils {
      * @param url rss url
      * @return 每个 rss 标签和它对应的值
      */
-    @SuppressWarnings({"AlibabaRemoveCommentedCode", "CommentedOutCode"})
+    @SuppressWarnings({"AlibabaRemoveCommentedCode"})
     public static RSSXml getRSSXml(String url) {
         // String url = "https://stackoverflow.com/feeds/tag?tagnames=rome";
         RSSXml rssXml = new RSSXml();
 
         ErrorMessages msg = new ErrorMessages();
-        // todo: configure detail of the request.
+        // future: configure detail of the request.
         //  如果设置了代理，需要在 client 这里设置访问代理
         //  https://stackoverflow.com/questions/4955644/apache-httpclient-4-1-proxy-settings
         //  https://github.com/rometools/rome/issues/276
@@ -74,8 +74,6 @@ public class RSSUtils {
     }
 
     /**
-     * todo: 可以用反射 按理说可以写个适配器
-     *
      * @param syndFeed rome 格式
      * @return 内部格式
      */

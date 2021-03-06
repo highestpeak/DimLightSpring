@@ -9,4 +9,5 @@ import org.springframework.data.repository.CrudRepository;
  */
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public interface RSSSourceRepository extends CrudRepository<RSSSource,Integer> {
+    RSSSource findByUrl(String url);
 }

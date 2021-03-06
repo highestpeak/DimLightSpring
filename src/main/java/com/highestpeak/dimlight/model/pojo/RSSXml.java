@@ -50,7 +50,7 @@ public class RSSXml {
     public static class RSSXmlItem{
         private String title;
         /**
-         * todo: 有的 entry 的 description 包含 image 标签 这个需要在呈现端即android上呈现出来
+         * future: 有的 entry 的 description 包含 image 标签 这个需要在呈现端即android上呈现出来
          *  https://rsshub.app/bilibili/bangumi/media/9192 例如这个就有
          */
         private String description;
@@ -63,7 +63,7 @@ public class RSSXml {
     }
 
     public String get(String key){
-        // todo: 通过反射获取各个变量
+        // future: 通过反射获取各个变量
         return "value:not impl";
     }
 }

@@ -50,21 +50,6 @@ public class RSSSourceParams implements InputConverter<RSSSource> {
     @JsonValidator
     private String jsonOptionalExtraFields;
 
-    /**
-     * 是否创建 task
-     * @see RSSSourceParams#getTaskParams()
-     */
-    @NotNull
-    private boolean createTask;
-
-    /**
-     * 是否启动 task
-     * 以及相关 task 参数
-     * todo 这个地方无法和 createTask 方便的联合验证，只能规定前端 create 为 false 时，不向后端传 task
-     */
-    @Valid
-    private TaskParams taskParams;
-
     @Override
     public RSSSource convertTo() {
         RSSSource rssSource = InputConverter.super.convertTo();
