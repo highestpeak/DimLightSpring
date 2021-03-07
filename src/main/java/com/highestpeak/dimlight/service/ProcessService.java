@@ -1,34 +1,50 @@
 package com.highestpeak.dimlight.service;
 
+import com.highestpeak.dimlight.model.entity.RSSSource;
+import com.highestpeak.dimlight.service.info.process.CombineInfoProcess;
+import com.highestpeak.dimlight.service.info.process.DuplicateRemoveProcess;
+import com.highestpeak.dimlight.service.info.process.InfoProcess;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 @Service
 public class ProcessService {
-    /**
-     * 去重
-     */
-    public Object removeDuplicates(){
-        return null;
+    public static final Map<String, InfoProcess> processMap = new HashMap<String, InfoProcess>(){{
+        put(DuplicateRemoveProcess.class.getName(),new DuplicateRemoveProcess());
+        put(CombineInfoProcess.class.getName(),new CombineInfoProcess());
+    }};
+
+    public Queue<InfoProcess> buildProcessQueue(RSSSource rssSource){
+        Queue<InfoProcess> processQueue = new LinkedList<>();
+
+        JSONArray processChainJson = new JSONObject(rssSource.getJsonOptionalExtraFields()).getJSONArray("processChain");
+        for (int i = 0; i < processChainJson.length(); i++) {
+            JSONObject jsonObject = processChainJson.getJSONObject(i);
+            InfoProcess infoProcess = buildOneProcess(jsonObject);
+
+            // 只有一级前后处理
+            JSONObject before = jsonObject.getJSONObject("before");
+            JSONObject after = jsonObject.getJSONObject("after");
+            infoProcess.setBefore(buildOneProcess(before));
+            infoProcess.setBefore(buildOneProcess(after));
+
+            processQueue.add(infoProcess);
+        }
+
+        return processQueue;
     }
 
-    /**
-     * 信息组合
-     */
-    public Object infoCombination(){
-        return null;
-    }
+    private InfoProcess buildOneProcess(JSONObject jsonObject){
+        String processName = jsonObject.getString("process");
 
-    /**
-     * 打上分组标签
-     */
-    public Object markGroupTag(){
-        return null;
-    }
+        InfoProcess infoProcess = processMap.get(processName);
 
-    /**
-     * 打上标签
-     */
-    public Object sortCurrentContent(){
-        return null;
+        JSONObject args = jsonObject.getJSONObject("args");
+        infoProcess.setArgs(args);
+
+        return infoProcess;
     }
 }

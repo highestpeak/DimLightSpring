@@ -1,8 +1,5 @@
 package com.highestpeak.dimlight.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
@@ -12,7 +9,6 @@ import com.highestpeak.dimlight.model.pojo.RSSXml;
 import com.highestpeak.dimlight.repository.RSSContentItemRepository;
 import com.highestpeak.dimlight.repository.RSSSourceRepository;
 import com.highestpeak.dimlight.service.info.process.InfoProcess;
-import com.highestpeak.dimlight.utils.ProcessUtils;
 import com.highestpeak.dimlight.utils.RSSUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +27,8 @@ public class RSSSourceService {
     private RSSSourceRepository rssSourceRepository;
     @Autowired
     private RSSContentItemRepository contentItemRepository;
+    @Autowired
+    private ProcessService processService;
 
     public static final String SAVE_RSS_SOURCE_ERROR_MSG = "保存 RSSSource 时发生错误;RSSSourceService:newRSSSource(..)";
 
@@ -61,6 +59,17 @@ public class RSSSourceService {
     /**
      * process chain from jsonOptionalExtraFields
      * jsonOptionalExtraFields 的字段解析
+     * "processChain":[
+     *   {
+     *       "process": "CombineInfoProcess",
+     *       "args": ...
+     *   },
+     *   {...},
+     *   {
+     *       "process": "DuplicateRemoveProcess",
+     *       "args": ...
+     *   }
+     * ]
      * @see RSSSourceParams#getJsonOptionalExtraFields()
      * @see RSSSource#getJsonOptionalExtraFields()
      */
@@ -74,16 +83,7 @@ public class RSSSourceService {
         }
 
         // get process chain from jsonOptionalExtraFields
-        ObjectMapper objectMapper = new ObjectMapper();
-        Queue<InfoProcess> infoProcessQueue = null;
-        try {
-            JsonNode jsonNode = objectMapper.readTree(rssSource.getJsonOptionalExtraFields());
-            JsonNode processChain = jsonNode.get("processChain");
-            infoProcessQueue = ProcessUtils.buildProcessQueue(processChain);
-        } catch (JsonProcessingException e) {
-            // todo
-            e.printStackTrace();
-        }
+        Queue<InfoProcess> infoProcessQueue = processService.buildProcessQueue(rssSource);
 
         // process rss xml items
         List<RSSContentItem> rssContentItems = null;
@@ -93,11 +93,9 @@ public class RSSSourceService {
             List<RSSContentItemProcess> rssContentItemProcesses = convertRSSXmlItem(rssXmlItems);
             while (infoProcessQueue.size() > 0){
                 InfoProcess nextProcess = infoProcessQueue.poll();
-                nextProcess.setRssXmlItemList(rssContentItemProcesses);
-                nextProcess.run();
                 // process 完后 可能会产生新的数据
-                rssContentItemProcesses = nextProcess.getRssXmlItemList();
-                if (rssContentItemProcesses==null||rssContentItemProcesses.size()<=0){
+                nextProcess.process(rssContentItemProcesses);
+                if (rssContentItemProcesses.size()<=0){
                     return;
                 }
             }

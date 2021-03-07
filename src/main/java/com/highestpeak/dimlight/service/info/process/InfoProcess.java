@@ -1,9 +1,9 @@
 package com.highestpeak.dimlight.service.info.process;
 
 import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
-import com.highestpeak.dimlight.model.pojo.RSSXml;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +13,22 @@ import java.util.List;
  */
 @Data
 @Builder
+@NoArgsConstructor
 public abstract class InfoProcess {
+    private Object args;
+
     private InfoProcess before;
     private InfoProcess after;
 
-    private List<RSSContentItemProcess> rssXmlItemList;
-
     /**
      * 流程处理的通用逻辑,返回处理后的 rssXmlItem
+     * @param rssXmlItemList
      */
-    public void run(){
-        Object beforeResult = before.process();
+    public void process(List<RSSContentItemProcess> rssXmlItemList){
+        Object beforeResult = null;
+        if (before!=null){
+             beforeResult = before.process();
+        }
         Object currResult = process();
         Object afterResult = after.process();
 
@@ -32,6 +37,11 @@ public abstract class InfoProcess {
         results.add(currResult);
         results.add(afterResult);
     }
+
+    /**
+     * 传递参数
+     */
+    protected abstract void processArgs();
 
     /**
      * 仅供自类重写

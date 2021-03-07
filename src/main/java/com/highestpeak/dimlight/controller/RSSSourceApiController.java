@@ -1,7 +1,6 @@
 package com.highestpeak.dimlight.controller;
 
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
-import com.highestpeak.dimlight.model.params.TaskParams;
 import com.highestpeak.dimlight.service.RSSSourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -50,7 +49,7 @@ public class RSSSourceApiController {
      * 由于 android 端还需要 rssSource 标识，所以需要这样的端点
      */
     @PostMapping("new")
-    public Object newRSSSource(@Validated({TaskParams.NewTask.class}) @RequestBody RSSSourceParams rssSourceParams){
+    public Object newRSSSource(@Validated @RequestBody RSSSourceParams rssSourceParams){
         return rssSourceService.newRSSSource(rssSourceParams);
     }
 
