@@ -24,13 +24,6 @@ public class ProcessService {
         for (int i = 0; i < processChainJson.length(); i++) {
             JSONObject jsonObject = processChainJson.getJSONObject(i);
             InfoProcess infoProcess = buildOneProcess(jsonObject);
-
-            // 只有一级前后处理
-            JSONObject before = jsonObject.getJSONObject("before");
-            JSONObject after = jsonObject.getJSONObject("after");
-            infoProcess.setBefore(buildOneProcess(before));
-            infoProcess.setBefore(buildOneProcess(after));
-
             processQueue.add(infoProcess);
         }
 
@@ -40,11 +33,6 @@ public class ProcessService {
     private InfoProcess buildOneProcess(JSONObject jsonObject){
         String processName = jsonObject.getString("process");
 
-        InfoProcess infoProcess = processMap.get(processName);
-
-        JSONObject args = jsonObject.getJSONObject("args");
-        infoProcess.setArgs(args);
-
-        return infoProcess;
+        return processMap.get(processName);
     }
 }

@@ -18,6 +18,7 @@ import javax.persistence.*;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class OutOfTimeTaskWarning extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

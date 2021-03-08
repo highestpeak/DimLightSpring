@@ -20,6 +20,7 @@ import java.util.List;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class RSSSource extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

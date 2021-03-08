@@ -2,7 +2,11 @@ package com.highestpeak.dimlight.controller;
 
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.service.RSSSourceService;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +22,15 @@ import java.util.List;
 public class RSSSourceApiController {
     @Autowired
     private RSSSourceService rssSourceService;
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchTemplate;
+
+    @GetMapping("/es")
+    public Object esTest(){
+        SearchRequest searchRequest;
+        BoolQueryBuilder outerQuery = QueryBuilders.boolQuery();
+        return null;
+    }
 
     /**
      * 删除 rssSource
@@ -42,6 +55,7 @@ public class RSSSourceApiController {
      */
     @GetMapping
     public Object getRSSSource(){
+
         return null;
     }
 

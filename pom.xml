@@ -81,6 +81,10 @@
 			<version>RELEASE</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.rometools/rome -->
 		<dependency>
 			<groupId>com.rometools</groupId>

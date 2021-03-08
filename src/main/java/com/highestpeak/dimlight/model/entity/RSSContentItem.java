@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.model.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.util.Date;
 /**
  * @author highestpeak
  */
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
+@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_content_item")
 @Table(name = "rss_content_item", indexes = {
         @Index(name = "rss_content_item_pub_date", columnList = "pub_date"),
@@ -20,6 +21,7 @@ import java.util.Date;
 @Data
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class RSSContentItem{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

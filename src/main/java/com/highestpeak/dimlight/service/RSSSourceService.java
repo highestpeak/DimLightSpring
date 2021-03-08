@@ -1,11 +1,13 @@
 package com.highestpeak.dimlight.service;
 
+import com.highestpeak.dimlight.model.entity.EsContent;
 import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
+import com.highestpeak.dimlight.repository.ESContentRepository;
 import com.highestpeak.dimlight.repository.RSSContentItemRepository;
 import com.highestpeak.dimlight.repository.RSSSourceRepository;
 import com.highestpeak.dimlight.service.info.process.InfoProcess;
@@ -23,6 +25,8 @@ import java.util.Queue;
 @SuppressWarnings({"AlibabaLowerCamelCaseVariableNaming", "AlibabaClassNamingShouldBeCamel"})
 @Service
 public class RSSSourceService {
+    @Autowired
+    private ESContentRepository esContentRepository;
     @Autowired
     private RSSSourceRepository rssSourceRepository;
     @Autowired
@@ -94,7 +98,7 @@ public class RSSSourceService {
             while (infoProcessQueue.size() > 0){
                 InfoProcess nextProcess = infoProcessQueue.poll();
                 // process 完后 可能会产生新的数据
-                nextProcess.process(rssContentItemProcesses);
+                rssContentItemProcesses = nextProcess.process(rssContentItemProcesses, rssSource, esContentRepository);
                 if (rssContentItemProcesses.size()<=0){
                     return;
                 }
@@ -103,8 +107,9 @@ public class RSSSourceService {
         }
 
         // save content
-        // todo: 这里可以采用向 elasticSearch 保存数据
-        contentItemRepository.saveAll(rssContentItems);
+        // todo: 这里可以采用向 elasticSearch 保存数据 idnex? property?
+        esContentRepository.saveAll(convertToEsContent(rssContentItems));
+        // contentItemRepository.saveAll(rssContentItems);
     }
 
     private List<RSSContentItemProcess> convertRSSXmlItem(List<RSSXml.RSSXmlItem> rssXmlItems){
@@ -121,6 +126,20 @@ public class RSSSourceService {
             );
         }
         return rssContentItems;
+    }
+
+    private List<EsContent> convertToEsContent(List<RSSContentItem> rssContentItems){
+        List<EsContent> esContents = new ArrayList<>(rssContentItems.size());
+        for (RSSContentItem rssContentItem: rssContentItems) {
+            esContents.add(EsContent.builder()
+                    .titleParse(rssContentItem.getTitleParse())
+                    .descParse(rssContentItem.getDescParse())
+                    .author(rssContentItem.getAuthor())
+                    .link(rssContentItem.getLink())
+                    .build()
+            );
+        }
+        return esContents;
     }
 
     private List<RSSContentItem> convertNoProcessRSSXmlItem(RSSSource rssSource, List<RSSXml.RSSXmlItem> rssXmlItems) {

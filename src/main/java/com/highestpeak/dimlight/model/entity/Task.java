@@ -22,6 +22,7 @@ import java.util.Date;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class Task extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")

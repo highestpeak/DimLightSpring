@@ -8,13 +8,10 @@ import java.util.List;
 
 /**
  * @author zhangjike <zhangjike@kuaishou.com>
- * Created on 2021-03-07
- * 去重
- * https://www.elastic.co/guide/cn/elasticsearch/guide/current/match-multi-word.html
- * 一定时间内（一天内、一周内），相似度去重
- *
+ * Created on 2021-03-08
+ * 排序
  */
-public class DuplicateRemoveProcess implements InfoProcess{
+public class ResortService implements InfoProcess{
     @Override
     public List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource, ESContentRepository esContentRepository) {
         return rssXmlItemList;
