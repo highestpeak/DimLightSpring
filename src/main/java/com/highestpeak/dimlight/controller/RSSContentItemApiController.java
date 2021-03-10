@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/rss/content_item/api")
+@RequestMapping("/api/rss/content_item")
 public class RSSContentItemApiController {
     /**
      * 由 web 前端页面控制台触发，删除指定的 ContentItem

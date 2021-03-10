@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.controller;
 
+import com.highestpeak.dimlight.model.params.DeleteParams;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.service.RSSSourceService;
 import org.elasticsearch.action.search.SearchRequest;
@@ -33,20 +34,21 @@ public class RSSSourceApiController {
     }
 
     /**
-     * 删除 rssSource
+     * 下面这个是个固定的key(假装有一个key)
      */
-    @DeleteMapping
-    public Object delRSSSource(){
-        return null;
+    @DeleteMapping("/s86h2xd93j")
+    public Object delRSSSource(@Validated @RequestBody DeleteParams deleteParams){
+        return rssSourceService.deleteRSSSource(deleteParams);
     }
 
-    /**
-     * 修改 rssSource 的内容在这里修改
-     * 修改 rssSource 是否 fetchable 也在这里修改
-     */
     @PutMapping
-    public Object updateRSSSource(){
-        return null;
+    public Object updateRSSSource(@Validated @RequestBody RSSSourceParams rssSourceParams){
+        return rssSourceService.newOrUpdateRSSSource(rssSourceParams);
+    }
+
+    @PostMapping
+    public Object newRSSSource(@Validated @RequestBody RSSSourceParams rssSourceParams){
+        return rssSourceService.newOrUpdateRSSSource(rssSourceParams);
     }
 
     /**
@@ -57,14 +59,6 @@ public class RSSSourceApiController {
     public Object getRSSSource(){
 
         return null;
-    }
-
-    /**
-     * 由于 android 端还需要 rssSource 标识，所以需要这样的端点
-     */
-    @PostMapping("new")
-    public Object newRSSSource(@Validated @RequestBody RSSSourceParams rssSourceParams){
-        return rssSourceService.newRSSSource(rssSourceParams);
     }
 
     /**

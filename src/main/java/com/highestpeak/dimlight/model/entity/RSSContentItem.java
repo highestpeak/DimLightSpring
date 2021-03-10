@@ -8,6 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author highestpeak
@@ -54,8 +55,6 @@ public class RSSContentItem{
 
     /**
      * 作者
-     * tmpdoc: 可以从RSS来源继承，也可以解析item的标签，也可以用户指定
-     *  在解析出一个RSSContentItem的时候再设置这个项
      */
     @Column(name = "author", nullable = false)
     private String author;
@@ -70,4 +69,21 @@ public class RSSContentItem{
     @ManyToOne
     @JoinColumn(name="rss_source_id", nullable=false)
     private RSSSource rssSource;
+
+    @ManyToMany
+    @JoinTable(
+            name = "item_and_tag",
+            joinColumns = @JoinColumn(name = "item_id"),
+            inverseJoinColumns = @JoinColumn(name = "type_id"))
+    private List<RSSSourceTag> rssSourceTags;
+
+    /**
+     * 分组/主题：topic
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "item_and_topic",
+            joinColumns = @JoinColumn(name = "item_id"),
+            inverseJoinColumns = @JoinColumn(name = "topic_id"))
+    private List<Topic> itemTopics;
 }

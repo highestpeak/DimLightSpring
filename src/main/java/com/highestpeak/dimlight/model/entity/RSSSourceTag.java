@@ -12,17 +12,16 @@ import java.util.List;
 
 /**
  * @author highestpeak
- * 这个 type 可作为最后的标签继承
  */
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
-@Entity(name = "rss_source_type")
-@Table(name = "rss_source_type", indexes = {
-        @Index(name = "rss_source_type_name", columnList = "name")})
+@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
+@Entity(name = "rss_source_tag")
+@Table(name = "rss_source_tag", indexes = {
+        @Index(name = "rss_source_tag_name", columnList = "name")})
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RSSSourceType implements Comparable<RSSSourceType> {
+public class RSSSourceTag implements Comparable<RSSSourceTag> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")
     @GenericGenerator(name = "custom_id", strategy = "com.highestpeak.dimlight.model.entity.support.CustomIdGenerator")
@@ -34,11 +33,14 @@ public class RSSSourceType implements Comparable<RSSSourceType> {
     @Column(name = "desc")
     private String desc;
 
-    @ManyToMany(mappedBy = "rssSourceTypes")
+    @ManyToMany(mappedBy = "rssSourceTags")
     private List<RSSSource> rssSources;
 
+    @ManyToMany(mappedBy = "rssItemTags")
+    private List<RSSContentItem> rssContentItems;
+
     @Override
-    public int compareTo(@NotNull RSSSourceType o) {
+    public int compareTo(@NotNull RSSSourceTag o) {
         return name.compareTo(o.name);
     }
 }

@@ -1,6 +1,6 @@
 package com.highestpeak.dimlight;
 
-import com.highestpeak.dimlight.model.entity.RSSSourceType;
+import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
 import com.highestpeak.dimlight.utils.RSSUtils;
 
@@ -21,7 +21,7 @@ public class SimpleTest {
     public static void test1(){
         String dbStr = String.join(",", Arrays.asList("blog", "ugc", "video"));
         StringTokenizer tokenizer = new StringTokenizer(dbStr,",");
-        List<RSSSourceType> result = new ArrayList<>(tokenizer.countTokens());
+        List<RSSSourceTag> result = new ArrayList<>(tokenizer.countTokens());
         while (tokenizer.hasMoreTokens()){
             String token = tokenizer.nextToken();
 //            result.add(new RSSSourceType(token,null));

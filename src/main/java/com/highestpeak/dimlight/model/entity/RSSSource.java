@@ -89,10 +89,23 @@ public class RSSSource extends BaseEntity {
     @OneToMany(mappedBy = "rssSource")
     private List<RSSContentItem> contentItems;
 
+    /**
+     * 标签
+     */
     @ManyToMany
     @JoinTable(
-            name = "source_type",
+            name = "source_and_tag",
             joinColumns = @JoinColumn(name = "source_id"),
             inverseJoinColumns = @JoinColumn(name = "type_id"))
-    private List<RSSSourceType> rssSourceTypes;
+    private List<RSSSourceTag> rssSourceTags;
+
+    /**
+     * 分组/主题：topic
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "source_and_topic",
+            joinColumns = @JoinColumn(name = "source_id"),
+            inverseJoinColumns = @JoinColumn(name = "topic_id"))
+    private List<Topic> rssTopics;
 }

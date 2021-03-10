@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/process/api")
+@RequestMapping("/api/process")
 public class ProcessController {
     /**
      * 去重

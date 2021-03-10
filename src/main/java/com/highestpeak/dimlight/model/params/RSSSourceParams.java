@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 @Data
-public class RSSSourceParams implements InputConverter<RSSSource> {
+public class RSSSourceParams{
     @URL
     private String url;
 
@@ -37,11 +37,11 @@ public class RSSSourceParams implements InputConverter<RSSSource> {
     @NotBlank
     private String generator;
 
-    /**
-     * types 是 type 的数组
-     * 可以为 null blank
-     */
-    private List<String> types;
+    private List<String> tags;
+
+    private List<String> topics;
+
+    private boolean fetchAble;
 
     /**
      * json 格式的额外字段
@@ -49,13 +49,4 @@ public class RSSSourceParams implements InputConverter<RSSSource> {
      */
     @JsonValidator
     private String jsonOptionalExtraFields;
-
-    @Override
-    public RSSSource convertTo() {
-        RSSSource rssSource = InputConverter.super.convertTo();
-        RSSXml rssXml = RSSUtils.getRSSXml(rssSource.getUrl());
-        rssSource.setTitleParse(rssXml.getTitle());
-        rssSource.setDescParse(rssXml.getDescription());
-        return rssSource;
-    }
 }
