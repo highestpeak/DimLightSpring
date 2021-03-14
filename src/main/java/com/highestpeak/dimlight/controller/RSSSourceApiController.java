@@ -47,7 +47,7 @@ public class RSSSourceApiController {
     /**
      * 下面这个是个固定的key(假装有一个key)
      */
-    @DeleteMapping("/s86h2xd93j")
+    @DeleteMapping("/${url.token}")
     public Object delRSSSource(@Validated @RequestBody DeleteRssParams deleteRssParams) {
         return rssSourceService.deleteRSSSource(deleteRssParams);
     }

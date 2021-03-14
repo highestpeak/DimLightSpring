@@ -9,4 +9,5 @@ import lombok.Data;
 @Data
 public class DeleteTopicParams {
     private Integer id;
-    private String name;}
+    private String name;
+}

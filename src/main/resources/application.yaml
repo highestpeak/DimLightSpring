@@ -26,3 +26,6 @@ spring:
     # 数据库方言配置
     database-platform: com.highestpeak.dimlight.config.SQLiteDialect
     show-sql: true
+
+# 某些重要操作所需的密钥
+url.token: lxhjoi2974o0snxgt

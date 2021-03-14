@@ -48,8 +48,6 @@ public class RSSSourceService {
     @Autowired
     private TopicRepository topicRepository;
     @Autowired
-    private RSSContentItemRepository contentItemRepository;
-    @Autowired
     private ProcessService processService;
 
     //----------------crud----------------//

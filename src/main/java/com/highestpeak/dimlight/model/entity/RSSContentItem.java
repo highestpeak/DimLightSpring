@@ -1,18 +1,32 @@
 package com.highestpeak.dimlight.model.entity;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author highestpeak
  */
+@EqualsAndHashCode(callSuper = true)
 @SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_content_item")
 @Table(name = "rss_content_item", indexes = {
@@ -23,7 +37,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RSSContentItem{
+public class RSSContentItem extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")
     @GenericGenerator(name = "custom_id", strategy = "com.highestpeak.dimlight.model.entity.support.CustomIdGenerator")
@@ -67,7 +81,7 @@ public class RSSContentItem{
     private String jsonOptionalExtraFields;
 
     @ManyToOne
-    @JoinColumn(name="rss_source_id", nullable=false)
+    @JoinColumn(name = "rss_source_id", nullable = false)
     private RSSSource rssSource;
 
     @ManyToMany
@@ -75,7 +89,7 @@ public class RSSContentItem{
             name = "item_and_tag",
             joinColumns = @JoinColumn(name = "item_id"),
             inverseJoinColumns = @JoinColumn(name = "type_id"))
-    private List<RSSSourceTag> rssSourceTags;
+    private List<RSSSourceTag> rssItemTags;
 
     /**
      * 分组/主题：topic

@@ -1,14 +1,17 @@
 package com.highestpeak.dimlight.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.Topic;
 import com.highestpeak.dimlight.model.params.DeleteTopicParams;
 import com.highestpeak.dimlight.model.params.TopicParams;
@@ -62,9 +65,18 @@ public class TopicService {
         return msg;
     }
 
-    public Object getTopicListByName(int pageNumber, int pageSize, List<String> names){
+    public Object getTopicListByName(int pageNumber, int pageSize, List<String> names) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        
-        return null;
+        return topicRepository.findByNames(pageable, names);
+    }
+
+    public Object getRssSourceByTopicName(int pageNumber, int pageSize, List<String> topicNames) {
+        List<Topic> rssByTopicNames = topicRepository.findRssByTopicNames( topicNames);
+        return rssByTopicNames.stream().flatMap(topic -> topic.getRssSources().stream()).collect(Collectors.toList());
+    }
+
+    public Object getContentItemsByTopicName(int pageNum, int pageSize, List<String> topicNames) {
+        List<Topic> itemsByTopic = topicRepository.findItemsByTopicNames( topicNames);
+        return itemsByTopic.stream().flatMap(topic -> topic.getRssContentItems().stream()).collect(Collectors.toList());
     }
 }

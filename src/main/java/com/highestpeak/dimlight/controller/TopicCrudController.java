@@ -35,7 +35,7 @@ public class TopicCrudController {
     @Resource
     private TopicService topicService;
 
-    @DeleteMapping
+    @DeleteMapping("/${url.token}")
     public Object delTopic(@Validated @RequestBody DeleteTopicParams topicParams) {
         return topicService.deleteTopic(topicParams);
     }
@@ -54,9 +54,17 @@ public class TopicCrudController {
     public Object getTopic(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize,
             @RequestParam(value = "searchType", defaultValue = "1") int type,
             @RequestParam("typeValue") Map<String, Object> typeValue) {
-        if (type == SearchTopicType.NORMAL_LIST.getValue()) {
+        if (type == SearchTopicType.NORMAL_LIST.getValue() || type==SearchTopicType.NAME.getValue()) {
             List<String> topicNames = getParamsValueList(typeValue.get("names"));
             return topicService.getTopicListByName(pageNum, pageSize, topicNames);
+        }
+        if (type==SearchTopicType.RSS_SOURCES.getValue()){
+            List<String> topicNames = getParamsValueList(typeValue.get("names"));
+            return topicService.getRssSourceByTopicName(pageNum,pageSize,topicNames);
+        }
+        if (type==SearchTopicType.CONTENT_ITEMS.getValue()){
+            List<String> topicNames = getParamsValueList(typeValue.get("names"));
+            return topicService.getContentItemsByTopicName(pageNum,pageSize,topicNames);
         }
         return null;
     }
