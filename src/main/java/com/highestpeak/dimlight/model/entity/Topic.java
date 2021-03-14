@@ -29,9 +29,6 @@ public class Topic extends BaseEntity{
     @Column(name = "desc")
     private String desc;
 
-    @Column(name = "type", nullable = false)
-    private String type;
-
     @ManyToMany(mappedBy = "rssTopics")
     private List<RSSSource> rssSources;
 

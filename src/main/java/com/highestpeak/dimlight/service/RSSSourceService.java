@@ -1,21 +1,35 @@
 package com.highestpeak.dimlight.service;
 
-import com.highestpeak.dimlight.model.entity.*;
-import com.highestpeak.dimlight.model.params.DeleteParams;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import com.highestpeak.dimlight.model.entity.EsContent;
+import com.highestpeak.dimlight.model.entity.RSSContentItem;
+import com.highestpeak.dimlight.model.entity.RSSSource;
+import com.highestpeak.dimlight.model.entity.RSSSourceTag;
+import com.highestpeak.dimlight.model.entity.Topic;
+import com.highestpeak.dimlight.model.params.DeleteRssParams;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
-import com.highestpeak.dimlight.repository.*;
+import com.highestpeak.dimlight.repository.ESContentRepository;
+import com.highestpeak.dimlight.repository.RSSContentItemRepository;
+import com.highestpeak.dimlight.repository.RSSSourceRepository;
+import com.highestpeak.dimlight.repository.RSSSourceTagRepository;
+import com.highestpeak.dimlight.repository.TopicRepository;
 import com.highestpeak.dimlight.service.info.process.InfoProcess;
 import com.highestpeak.dimlight.utils.RSSUtils;
-import lombok.val;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author highestpeak
@@ -23,6 +37,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"AlibabaLowerCamelCaseVariableNaming", "AlibabaClassNamingShouldBeCamel"})
 @Service
 public class RSSSourceService {
+    public static final String SAVE_RSS_SOURCE_ERROR_MSG = "保存 RSSSource 时发生错误;RSSSourceService:newRSSSource(..)";
+    public static final String DEL_RSS_SOURCE_ERROR_MSG = "删除 RSSSource 时发生错误;RSSSourceService:deleteRSSSource(..)";
     @Autowired
     private ESContentRepository esContentRepository;
     @Autowired
@@ -35,9 +51,6 @@ public class RSSSourceService {
     private RSSContentItemRepository contentItemRepository;
     @Autowired
     private ProcessService processService;
-
-    public static final String SAVE_RSS_SOURCE_ERROR_MSG = "保存 RSSSource 时发生错误;RSSSourceService:newRSSSource(..)";
-    public static final String DEL_RSS_SOURCE_ERROR_MSG = "删除 RSSSource 时发生错误;RSSSourceService:deleteRSSSource(..)";
 
     //----------------crud----------------//
 
@@ -110,18 +123,34 @@ public class RSSSourceService {
         return topic;
     }
 
-    public Object deleteRSSSource(DeleteParams deleteParams) {
+    public Object deleteRSSSource(DeleteRssParams deleteRssParams) {
         ErrorMessages msg = new ErrorMessages();
         try {
-            if (deleteParams.getId() != null) {
-                rssSourceRepository.deleteById(deleteParams.getId());
+            if (deleteRssParams.getId() != null) {
+                rssSourceRepository.deleteById(deleteRssParams.getId());
             } else {
-                rssSourceRepository.deleteByTitleUser(deleteParams.getTitleUser());
+                rssSourceRepository.deleteByTitleUser(deleteRssParams.getTitleUser());
             }
         } catch (Exception e) {
             msg.addMsg(ErrorMessages.buildExceptionMsg(DEL_RSS_SOURCE_ERROR_MSG, e));
         }
         return msg;
+    }
+
+    public Object getRSSList(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
+        return rssSourceRepository.findList(pageable);
+    }
+
+    public Object getRSSListByTitle(int pageNumber, int pageSize, List<String> titleUsers,List<String> titleParses) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
+        return rssSourceRepository.getRSSListByTitle(pageable, titleUsers, titleParses);
+    }
+
+    public Object getContentItems(int pageNumber, int pageSize, List<String> titleUsers, List<String> titleParses,
+            List<Integer> ids) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
+        return rssSourceRepository.getTargetRSSForContentItems(pageable, titleUsers, titleParses, ids);
     }
 
     //----------------fetchRSS----------------//

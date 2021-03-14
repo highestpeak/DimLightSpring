@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 @Data
-public class DeleteParams {
+public class DeleteRssParams {
     private Integer id;
     private String titleUser;
 }

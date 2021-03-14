@@ -1,26 +1,22 @@
 package com.highestpeak.dimlight.model.params;
 
-import com.highestpeak.dimlight.model.InputConverter;
-import com.highestpeak.dimlight.model.entity.RSSSource;
-import com.highestpeak.dimlight.model.params.validation.ImageValidator;
-import com.highestpeak.dimlight.model.params.validation.JsonValidator;
-import com.highestpeak.dimlight.model.pojo.RSSXml;
-import com.highestpeak.dimlight.utils.RSSUtils;
-import lombok.Data;
+import java.util.List;
+
+import javax.validation.constraints.NotBlank;
+
 import org.hibernate.validator.constraints.URL;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Map;
+import com.highestpeak.dimlight.model.params.validation.ImageValidator;
+import com.highestpeak.dimlight.model.params.validation.JsonValidator;
+
+import lombok.Data;
 
 /**
  * @author highestpeak
  */
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 @Data
-public class RSSSourceParams{
+public class RSSSourceParams {
     @URL
     private String url;
 
