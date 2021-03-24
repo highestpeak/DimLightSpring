@@ -18,6 +18,7 @@ import lombok.Data;
 @Data
 public class RSSSourceParams {
     @URL
+    @NotBlank
     private String url;
 
     /**
@@ -37,12 +38,11 @@ public class RSSSourceParams {
 
     private List<String> topics;
 
-    private boolean fetchAble;
+    private boolean fetchAble = true;
 
     /**
      * json 格式的额外字段
      * 校验是否符合 json 格式
      */
-    @JsonValidator
     private String jsonOptionalExtraFields;
 }

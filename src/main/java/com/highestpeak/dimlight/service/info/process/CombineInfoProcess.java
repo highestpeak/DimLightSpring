@@ -2,7 +2,6 @@ package com.highestpeak.dimlight.service.info.process;
 
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
-import com.highestpeak.dimlight.repository.ESContentRepository;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
  */
 public class CombineInfoProcess implements InfoProcess{
     @Override
-    public List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource, ESContentRepository esContentRepository) {
+    public List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource) {
         return rssXmlItemList;
     }
 }

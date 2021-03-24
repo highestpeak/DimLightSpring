@@ -9,15 +9,6 @@ spring:
     url: jdbc:sqlite:DimLight.db
     username: admin
     password: 123456
-  data:
-    elasticsearch:
-      cluster-name: elasticsearch
-      cluster-nodes: http://localhost:9200/
-    # MySQL database configuration.
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://127.0.0.1:3306/halodb?characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-#    username: root
-#    password: 123456
   jpa:
     hibernate:
       # 注意这个 auto 的取值
@@ -26,3 +17,10 @@ spring:
     # 数据库方言配置
     database-platform: com.highestpeak.dimlight.config.SQLiteDialect
     show-sql: true
+  servlet:
+    multipart:
+      enabled: true #默认支持文件上传.
+      file-size-threshold: 0 #支持文件写入磁盘.
+      # location:  # 上传文件的临时目录
+      max-file-size: 10485760 # 最大支持文件大小 10M
+      max-request-size: 10485760 # 最大支持请求大小 10M

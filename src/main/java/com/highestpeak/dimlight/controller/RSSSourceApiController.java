@@ -1,29 +1,26 @@
 package com.highestpeak.dimlight.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.highestpeak.dimlight.model.enums.SearchRssSourceType;
 import com.highestpeak.dimlight.model.params.DeleteRssParams;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
+import com.highestpeak.dimlight.model.params.validation.JsonValidator;
+import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.service.RSSSourceService;
+import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author highestpeak
@@ -39,8 +36,6 @@ public class RSSSourceApiController {
     @GetMapping("/es")
     public Object esTest() {
         // feature
-        SearchRequest searchRequest;
-        BoolQueryBuilder outerQuery = QueryBuilders.boolQuery();
         return null;
     }
 
@@ -62,6 +57,89 @@ public class RSSSourceApiController {
         return rssSourceService.newOrUpdateRSSSource(rssSourceParams);
     }
 
+    @PostMapping("/json")
+    public Object rssImportByJson(@JsonValidator @RequestBody String json) {
+        // file string
+        return rssSourceService.addRssSourceFromJson(json);
+    }
+
+    @GetMapping("/json")
+    public Object rssExportJson(HttpServletResponse response) {
+        try {
+            response.getWriter().write(rssSourceService.exportRssSourceAsJson().toString());
+            response.flushBuffer();
+        } catch (IOException ex) {
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+        return null;
+    }
+
+    /**
+     * 可测试 opml 列表
+     * https://raw.githubusercontent.com/lotosbin/opml-list/master/generate/all.opml
+     * https://gist.github.com/webpro/5907452
+     */
+    @PostMapping("/opml")
+    public Object rssImportByOpml(
+            @RequestParam("file") MultipartFile opmlFile,
+            @RequestParam("string") String opmlString,
+            @RequestParam("urls") List<String> opmlUrls
+    ) {
+        ErrorMessages errorMessages = new ErrorMessages();
+        if (opmlFile == null || opmlFile.isEmpty()) {
+            return "file is empty";
+        } else {
+            File file = new File(Objects.requireNonNull(opmlFile.getOriginalFilename()));
+            try {
+                opmlFile.transferTo(file);
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(file);
+                errorMessages.mergeMsgWithExtraTag(rssSourceService.addRssSourceFromOpml(document),"opml in file");
+            } catch (IOException | DocumentException e) {
+                // log exception
+            }
+        }
+
+        if (StringUtils.isNotBlank(opmlString)) {
+            SAXReader reader = new SAXReader();
+            try {
+                Document document = reader.read(opmlString);
+                errorMessages.mergeMsgWithExtraTag(rssSourceService.addRssSourceFromOpml(document),"opml in string");
+            } catch (DocumentException e) {
+                // log exception
+            }
+        }
+
+        if (opmlUrls != null) {
+            opmlUrls.parallelStream().map(s -> {
+                try {
+                    return new SAXReader().read(s);
+                } catch (DocumentException e) {
+                    // log exception
+                    errorMessages.addMsg("opml in url read error: url:"+s);
+                    return null;
+                }
+            }).filter(Objects::nonNull).forEach(document -> {
+                errorMessages.mergeMsgWithExtraTag(rssSourceService.addRssSourceFromOpml(document),"opml in url");
+            });
+        }
+
+        return errorMessages;
+    }
+
+    @GetMapping("/opml")
+    public Object rssExportOpml(HttpServletResponse response) {
+        try {
+            OutputFormat format = OutputFormat.createPrettyPrint();
+            XMLWriter writer = new XMLWriter(response.getOutputStream(), format);
+            writer.write(rssSourceService.exportRssSourceAsOpml());
+            response.flushBuffer();
+        } catch (Exception ex) {
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+        return null;
+    }
+
     /**
      * 1. 单纯返回某个page的List
      * 2. 返回符合titleUser列表或者titleParse列表的集合
@@ -69,8 +147,8 @@ public class RSSSourceApiController {
      */
     @GetMapping
     public Object getRSSSource(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize,
-            @RequestParam(value = "searchType", defaultValue = "1") int type,
-            @RequestParam("typeValue") Map<String, Object> typeValue) {
+                               @RequestParam(value = "searchType", defaultValue = "1") int type,
+                               @RequestParam("typeValue") Map<String, Object> typeValue) {
         if (type == SearchRssSourceType.NORMAL_LIST.getValue()) {
             return rssSourceService.getRSSList(pageNum, pageSize);
         }
@@ -86,7 +164,7 @@ public class RSSSourceApiController {
             List<String> titleUsers = getParamsValueList(typeValue.get("titleUsers"));
             List<String> titleParses = getParamsValueList(typeValue.get("titleParses"));
             List<Integer> ids = getParamsValueList(typeValue.get("ids"));
-            return rssSourceService.getContentItems(pageNum, pageSize,titleUsers,titleParses,ids);
+            return rssSourceService.getContentItems(pageNum, pageSize, titleUsers, titleParses, ids);
         }
         return null;
     }
@@ -105,6 +183,6 @@ public class RSSSourceApiController {
      */
     @PostMapping("huginn/emit/fetch")
     public Object emitItemFetch(@Validated List<RSSSourceParams> rssSourceParams) {
-        return rssSourceService.fetchRSS(rssSourceParams);
+        return rssSourceService.fetchRSSFromParams(rssSourceParams);
     }
 }

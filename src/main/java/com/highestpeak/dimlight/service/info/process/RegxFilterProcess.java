@@ -2,7 +2,6 @@ package com.highestpeak.dimlight.service.info.process;
 
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
-import com.highestpeak.dimlight.repository.ESContentRepository;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class RegxFilterProcess implements InfoProcess {
     @Override
-    public List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource, ESContentRepository esContentRepository) {
+    public List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource) {
         JSONObject filterRegx = new JSONObject(rssSource.getJsonOptionalExtraFields()).getJSONObject("filterRegx");
         String titleRegx = filterRegx.getString("titleRegx");
         String descriptionRegx = filterRegx.getString("descriptionRegx");

@@ -23,11 +23,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RSSContentItem{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "custom_id")
-    @GenericGenerator(name = "custom_id", strategy = "com.highestpeak.dimlight.model.entity.support.CustomIdGenerator")
-    private Integer id;
+public class RSSContentItem extends BaseEntity{
 
     @Column(name = "title_parse", nullable = false)
     private String titleParse;
@@ -75,7 +71,7 @@ public class RSSContentItem{
             name = "item_and_tag",
             joinColumns = @JoinColumn(name = "item_id"),
             inverseJoinColumns = @JoinColumn(name = "type_id"))
-    private List<RSSSourceTag> rssSourceTags;
+    private List<RSSSourceTag> rssItemTags;
 
     /**
      * 分组/主题：topic
