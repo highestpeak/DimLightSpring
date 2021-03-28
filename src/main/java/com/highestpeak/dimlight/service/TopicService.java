@@ -1,19 +1,22 @@
 package com.highestpeak.dimlight.service;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
+import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.entity.Topic;
 import com.highestpeak.dimlight.model.params.DeleteTopicParams;
 import com.highestpeak.dimlight.model.params.TopicParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.repository.TopicRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author zhangjike <zhangjike@kuaishou.com>
@@ -22,8 +25,6 @@ import com.highestpeak.dimlight.repository.TopicRepository;
 @Service
 public class TopicService {
 
-    public static final String DEL_TOPIC_ERROR_MSG = "删除 Topic 时发生错误;TopicService:deleteTopic(..)";
-    public static final String SAVE_TOPIC_ERROR_MSG = "保存 Topic 时发生错误;TopicService:newOrUpdateTopic(..)";
     @Resource
     private TopicRepository topicRepository;
 
@@ -31,19 +32,25 @@ public class TopicService {
         ErrorMessages msg = new ErrorMessages();
         Topic topic = topicRepository.findByName(topicParams.getName());
 
-        boolean isTopicExist = false;
-        if (topic == null) {
-            topic = Topic.builder()
-                    .name(topicParams.getName())
-                    .desc(topicParams.getDesc())
-                    .build();
-            isTopicExist = true;
+        int id = -1;
+        Date originCreatetime = null;
+        if (topic != null) {
+            id = topic.getId();
+            originCreatetime = topic.getCreateTime();
+        }
+        topic = Topic.builder()
+                .name(topicParams.getName())
+                .descUser(topicParams.getDesc())
+                .build();
+        if (id != -1) {
+            topic.setId(id);
+            topic.setCreateTime(originCreatetime);
         }
 
         try {
             Topic savedTopic = topicRepository.save(topic);
         } catch (Exception e) {
-            msg.addMsg(ErrorMessages.buildExceptionMsg(SAVE_TOPIC_ERROR_MSG, e));
+            msg.addMsg(ErrorMessages.buildExceptionMsg("保存 Topic 时发生错误", e));
         }
         return msg;
     }
@@ -57,14 +64,41 @@ public class TopicService {
                 topicRepository.deleteByName(deleteTopicParams.getName());
             }
         } catch (Exception e) {
-            msg.addMsg(ErrorMessages.buildExceptionMsg(DEL_TOPIC_ERROR_MSG, e));
+            msg.addMsg(ErrorMessages.buildExceptionMsg("删除 Topic 时发生错误", e));
         }
         return msg;
     }
 
-    public Object getTopicListByName(int pageNumber, int pageSize, List<String> names){
+    public Object getTopicListByName(int pageNumber, int pageSize, List<String> names) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        
-        return null;
+        return topicRepository.findByNames(pageable, names);
+    }
+
+    public Object getRssSourceByTopicName(int pageNumber, int pageSize, List<String> topicNames) {
+        List<Topic> rssByTopicNames = topicRepository.findRssByTopicNames(topicNames);
+        return rssByTopicNames.stream().flatMap(topic -> topic.getRssSources().stream()).collect(Collectors.toList());
+    }
+
+    public Object getContentItemsByTopicName(int pageNum, int pageSize, List<String> topicNames) {
+        List<Topic> itemsByTopic = topicRepository.findItemsByTopicNames(topicNames);
+        return itemsByTopic.stream().flatMap(topic -> topic.getRssContentItems().stream()).collect(Collectors.toList());
+    }
+
+    public Object getTopicList(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
+        Page<Integer> idList = topicRepository.findList(pageable);
+        List<Topic> rssSources = pageToTagList(idList);
+        return rssSources;
+    }
+
+    private List<Topic> pageToTagList(Page<Integer> tagIdList) {
+        List<Integer> idList = tagIdList.getContent();
+        // todo 同样要避免 tag 和 topic 对 contentitem 递归查询
+        List<Topic> rssSources = idList.stream()
+                .map(topicRepository::findById)
+                .map(Optional::get)
+                .map(Topic::removeItemsFromEntity)
+                .collect(Collectors.toList());
+        return rssSources;
     }
 }

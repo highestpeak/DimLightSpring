@@ -37,8 +37,8 @@ public class Task extends BaseEntity{
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "desc")
-    private String desc;
+    @Column(name = "desc_user")
+    private String descUser;
 
     /**
      * 生命周期，可以存活多长时间

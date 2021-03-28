@@ -1,9 +1,7 @@
 package com.highestpeak.dimlight.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,6 +11,7 @@ import java.util.List;
 /**
  * @author highestpeak
  */
+@EqualsAndHashCode(callSuper = true)
 @SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_source_tag")
 @Table(name = "rss_source_tag", indexes = {
@@ -26,17 +25,27 @@ public class RSSSourceTag extends BaseEntity implements Comparable<RSSSourceTag>
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "desc")
-    private String desc;
+    @Column(name = "desc_user")
+    private String descUser;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssSourceTags")
     @ManyToMany(mappedBy = "rssSourceTags")
     private List<RSSSource> rssSources;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssItemTags")
     @ManyToMany(mappedBy = "rssItemTags")
     private List<RSSContentItem> rssContentItems;
 
     @Override
     public int compareTo(@NotNull RSSSourceTag o) {
         return name.compareTo(o.name);
+    }
+
+    public RSSSourceTag removeItemsFromEntity() {
+        this.rssSources.clear();
+        this.rssContentItems.clear();
+        return this;
     }
 }

@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -17,17 +18,27 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Topic extends BaseEntity{
+public class Topic extends BaseEntity {
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "desc")
-    private String desc;
+    @Column(name = "desc_user")
+    private String descUser;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssTopics")
     @ManyToMany(mappedBy = "rssTopics")
     private List<RSSSource> rssSources;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("itemTopics")
     @ManyToMany(mappedBy = "itemTopics")
     private List<RSSContentItem> rssContentItems;
+
+    public Topic removeItemsFromEntity() {
+        this.rssSources.clear();
+        this.rssContentItems.clear();
+        return this;
+    }
 }

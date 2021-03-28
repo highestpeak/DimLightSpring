@@ -1,9 +1,7 @@
 package com.highestpeak.dimlight.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -13,6 +11,7 @@ import java.util.List;
 /**
  * @author highestpeak
  */
+@EqualsAndHashCode(callSuper = true)
 @SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_content_item")
 @Table(name = "rss_content_item", indexes = {
@@ -62,10 +61,14 @@ public class RSSContentItem extends BaseEntity{
     @Column(name = "json_optional_extra_fields")
     private String jsonOptionalExtraFields;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("contentItems")
     @ManyToOne
     @JoinColumn(name="rss_source_id", nullable=false)
     private RSSSource rssSource;
 
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssContentItems")
     @ManyToMany
     @JoinTable(
             name = "item_and_tag",
@@ -76,6 +79,8 @@ public class RSSContentItem extends BaseEntity{
     /**
      * 分组/主题：topic
      */
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssContentItems")
     @ManyToMany
     @JoinTable(
             name = "item_and_topic",

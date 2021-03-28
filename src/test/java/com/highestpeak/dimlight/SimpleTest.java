@@ -1,6 +1,10 @@
 package com.highestpeak.dimlight;
 
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
+import com.highestpeak.dimlight.model.pojo.ErrorMessages;
+import com.highestpeak.dimlight.model.pojo.RSSXml;
+import com.highestpeak.dimlight.utils.RSSUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.dom4j.*;
@@ -24,8 +28,8 @@ public class SimpleTest {
 //        String s = Arrays.toString(RSSSourceStatus.values());
 //        System.out.println(EnumUtils.getEnumMap(TaskStatus.class).keySet());
 
-//        RSSXml rssXml = RSSUtils.getRSSXml("https://rsshub.app/bilibili/bangumi/media/9192");
-//        System.out.println("rssXml.getTitle() = " + rssXml.getTitle());
+        ImmutablePair<RSSXml, ErrorMessages> rssXml = RSSUtils.getRSSXml("http://iamsujie.com/feed/");
+        System.out.println("rssXml.getTitle() = " + rssXml.getLeft().getTitle());
 
 //        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 //        factory.setValidating(true);
@@ -68,29 +72,30 @@ public class SimpleTest {
 //                "  </outline>";
 //        Document doc = builder.parse(opml);
 //        DocumentType doctype = doc.getDoctype();
-        Document document = DocumentHelper.createDocument();
-        Element root = document.addElement("opml");
 
-        Element head = root.addElement("head");
-        // buildHead
-        Element headTitle = head.addElement("title");
-        headTitle.addText("highestpeak");
-
-        Element body = root.addElement("body");
-        // buildBody
-        Element outline = body.addElement("outline");
-        outline.addAttribute("type","rss");
-        outline.addAttribute("text","test1");
-        outline.addAttribute("xmlUrl","https://xxxxx.rss");
-
-        Element outline1 = body.addElement("outline");
-        outline1.addAttribute("type","rss");
-        outline1.addAttribute("text","test2");
-        outline1.addAttribute("xmlUrl","https://xxxxx2.rss");
-
-        OutputFormat format = OutputFormat.createPrettyPrint();
-        XMLWriter writer = new XMLWriter(System.out, format);
-        writer.write( document );
+//        Document document = DocumentHelper.createDocument();
+//        Element root = document.addElement("opml");
+//
+//        Element head = root.addElement("head");
+//        // buildHead
+//        Element headTitle = head.addElement("title");
+//        headTitle.addText("highestpeak");
+//
+//        Element body = root.addElement("body");
+//        // buildBody
+//        Element outline = body.addElement("outline");
+//        outline.addAttribute("type","rss");
+//        outline.addAttribute("text","test1");
+//        outline.addAttribute("xmlUrl","https://xxxxx.rss");
+//
+//        Element outline1 = body.addElement("outline");
+//        outline1.addAttribute("type","rss");
+//        outline1.addAttribute("text","test2");
+//        outline1.addAttribute("xmlUrl","https://xxxxx2.rss");
+//
+//        OutputFormat format = OutputFormat.createPrettyPrint();
+//        XMLWriter writer = new XMLWriter(System.out, format);
+//        writer.write( document );
 
 //        parseOpml();
 

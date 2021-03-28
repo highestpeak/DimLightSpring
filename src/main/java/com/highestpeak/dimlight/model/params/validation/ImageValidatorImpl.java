@@ -20,6 +20,9 @@ public class ImageValidatorImpl implements ConstraintValidator<ImageValidator, S
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value==null){
+            return true;
+        }
         int splitIndex = value.indexOf(":");
 
         String prefix = value.substring(0, splitIndex);

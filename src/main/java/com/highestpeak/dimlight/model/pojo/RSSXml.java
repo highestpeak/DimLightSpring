@@ -15,6 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public class RSSXml {
+    public static final RSSXml DEFAULT_RSS_XML = new RSSXml();
+
     private String title;
     private String description;
     private String link;
@@ -36,7 +38,7 @@ public class RSSXml {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class RSSXmlImage{
+    public static class RSSXmlImage {
         private String title;
         private String link;
         private String url;
@@ -47,11 +49,11 @@ public class RSSXml {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class RSSXmlItem{
+    public static class RSSXmlItem {
         private String title;
         /**
          * future: 有的 entry 的 description 包含 image 标签 这个需要在呈现端即android上呈现出来
-         *  https://rsshub.app/bilibili/bangumi/media/9192 例如这个就有
+         * https://rsshub.app/bilibili/bangumi/media/9192 例如这个就有
          */
         private String description;
         private String link;
@@ -62,8 +64,12 @@ public class RSSXml {
         private String comments;
     }
 
-    public String get(String key){
+    public String get(String key) {
         // future: 通过反射获取各个变量
         return "value:not impl";
+    }
+
+    public static boolean isRSSXMLNotGet(RSSXml rssXml) {
+        return rssXml == null || rssXml == DEFAULT_RSS_XML;
     }
 }

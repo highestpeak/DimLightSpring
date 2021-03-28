@@ -1,7 +1,7 @@
 package com.highestpeak.dimlight.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.List;
@@ -82,12 +82,16 @@ public class RSSSource extends BaseEntity {
     /**
      * 由这个源生成的内容项
      */
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssSource")
     @OneToMany(mappedBy = "rssSource")
     private List<RSSContentItem> contentItems;
 
     /**
      * 标签
      */
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssSources")
     @ManyToMany
     @JoinTable(
             name = "source_and_tag",
@@ -98,10 +102,17 @@ public class RSSSource extends BaseEntity {
     /**
      * 分组/主题：topic
      */
+    @ToString.Exclude
+    @JsonIgnoreProperties("rssSources")
     @ManyToMany
     @JoinTable(
             name = "source_and_topic",
             joinColumns = @JoinColumn(name = "source_id"),
             inverseJoinColumns = @JoinColumn(name = "topic_id"))
     private List<Topic> rssTopics;
+
+    public RSSSource removeItemsFromEntity() {
+        this.contentItems.clear();
+        return this;
+    }
 }

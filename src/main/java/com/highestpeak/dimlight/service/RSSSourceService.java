@@ -1,8 +1,14 @@
 package com.highestpeak.dimlight.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.highestpeak.dimlight.exception.ErrorMsgException;
 import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
@@ -16,19 +22,24 @@ import com.highestpeak.dimlight.repository.RSSSourceRepository;
 import com.highestpeak.dimlight.repository.RSSSourceTagRepository;
 import com.highestpeak.dimlight.repository.TopicRepository;
 import com.highestpeak.dimlight.service.info.process.InfoProcess;
+import com.highestpeak.dimlight.utils.JacksonUtils;
 import com.highestpeak.dimlight.utils.RSSUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.dom4j.*;
 import org.dom4j.tree.AbstractElement;
 import org.dom4j.tree.DefaultElement;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,49 +61,71 @@ public class RSSSourceService {
 
     public ErrorMessages newOrUpdateRSSSource(RSSSourceParams rssSourceParams) {
         ErrorMessages msg = new ErrorMessages();
-        RSSSource rssSource = rssSourceRepository.findByTitleUser(rssSourceParams.getTitleUser());
 
-        boolean isRssSourceExist = true;
+        // 查找现有id
+        int id = -1;
+        Date originCreatetime = null;
+        RSSSource rssSource = rssSourceRepository.findByTitleUser(rssSourceParams.getTitleUser());
         if (rssSource == null) {
-            rssSource = RSSSource.builder()
-                    .url(rssSourceParams.getUrl())
-                    .titleUser(rssSourceParams.getTitleUser())
-                    .descUser(rssSourceParams.getDescUser())
-                    .image(rssSourceParams.getImage())
-                    .generator(rssSourceParams.getGenerator())
-                    .jsonOptionalExtraFields(rssSourceParams.getJsonOptionalExtraFields())
-                    .fetchAble(rssSourceParams.isFetchAble())
-                    .build();
-            isRssSourceExist = false;
+            rssSource = rssSourceRepository.findTopByUrl(rssSourceParams.getUrl());
+            if (rssSource != null) {
+                id = rssSource.getId();
+                originCreatetime = rssSource.getCreateTime();
+            }
+        } else {
+            id = rssSource.getId();
+            originCreatetime = rssSource.getCreateTime();
         }
 
+        // 构建rssSource
+        rssSource = RSSSource.builder()
+                .url(rssSourceParams.getUrl())
+                .titleUser(rssSourceParams.getTitleUser())
+                .descUser(rssSourceParams.getDescUser())
+                .image(rssSourceParams.getImage())
+                .generator(rssSourceParams.getGenerator())
+                .jsonOptionalExtraFields(rssSourceParams.getJsonOptionalExtraFields())
+                .fetchAble(rssSourceParams.isFetchAble())
+                .build();
+        if (id != -1) {
+            rssSource.setId(id);
+            rssSource.setCreateTime(originCreatetime == null ? new Date() : originCreatetime);
+        }
+
+        // 更新tags
         List<String> tags = rssSourceParams.getTags();
-        if (tags != null && tags.size() > 0) {
+        if (tags != null) {
             Set<String> nextTagNameSet = new HashSet<>(tags);
-            List<RSSSourceTag> rssSourceTags = null;
-            if (isRssSourceExist) {
-                List<RSSSourceTag> currTags = rssSource.getRssSourceTags();
-                Set<String> currTagNameSet = currTags.stream().map(RSSSourceTag::getName).collect(Collectors.toSet());
-                nextTagNameSet.retainAll(currTagNameSet);
-            }
-            rssSourceTags = nextTagNameSet.stream().map(this::fetchOrCreateTag).collect(Collectors.toList());
+            List<RSSSourceTag> rssSourceTags = nextTagNameSet.stream()
+                    .map(this::fetchOrCreateTag)
+                    .collect(Collectors.toList());
             rssSource.setRssSourceTags(rssSourceTags);
         }
 
+        // 更新topics
         List<String> topics = rssSourceParams.getTopics();
-        if (topics != null && topics.size() > 0) {
+        if (topics != null) {
             Set<String> nextTopicNameSet = new HashSet<>(topics);
-            List<Topic> rssSourceTopics = null;
-            if (isRssSourceExist) {
-                List<Topic> currTopics = rssSource.getRssTopics();
-                Set<String> currTopicNameSet = currTopics.stream().map(Topic::getName).collect(Collectors.toSet());
-                nextTopicNameSet.retainAll(currTopicNameSet);
-            }
-            rssSourceTopics = nextTopicNameSet.stream().map(this::fetchOrCreateTopic).collect(Collectors.toList());
+            List<Topic> rssSourceTopics = nextTopicNameSet.stream()
+                    .map(this::fetchOrCreateTopic)
+                    .collect(Collectors.toList());
             rssSource.setRssTopics(rssSourceTopics);
         }
 
         try {
+            // 查找rss的xml中的内容
+            if (rssSource.getTitleParse() == null) {
+                ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssSource.getUrl());
+                RSSXml rssXml = result.getLeft();
+                if (RSSXml.isRSSXMLNotGet(rssXml)) {
+                    throw new Exception();
+                }
+                ErrorMessages resultMsg = result.getRight();
+                msg.mergeMsg(resultMsg);
+
+                rssSource.setTitleParse(rssXml.getTitle());
+                rssSource.setDescParse(rssXml.getDescription());
+            }
             RSSSource savedSource = rssSourceRepository.save(rssSource);
         } catch (Exception e) {
             msg.addMsg(ErrorMessages.buildExceptionMsg("保存 RSSSource 时发生错误", e));
@@ -107,7 +140,7 @@ public class RSSSourceService {
     private RSSSourceTag fetchOrCreateTag(String tagName, String desc) {
         RSSSourceTag rssSourceTag = rssSourceTagRepository.findByName(tagName);
         if (rssSourceTag == null) {
-            rssSourceTag = RSSSourceTag.builder().name(tagName).desc(desc).build();
+            rssSourceTag = RSSSourceTag.builder().name(tagName).descUser(desc).build();
             rssSourceTag = rssSourceTagRepository.save(rssSourceTag);
         }
         return rssSourceTag;
@@ -120,7 +153,7 @@ public class RSSSourceService {
     private Topic fetchOrCreateTopic(String topicName, String desc) {
         Topic topic = topicRepository.findByName(topicName);
         if (topic == null) {
-            topic = Topic.builder().name(topicName).desc(desc).build();
+            topic = Topic.builder().name(topicName).descUser(desc).build();
             topic = topicRepository.save(topic);
         }
         return topic;
@@ -142,12 +175,27 @@ public class RSSSourceService {
 
     public Object getRSSList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        return rssSourceRepository.findList(pageable);
+        Page<Integer> idList = rssSourceRepository.findList(pageable);
+        List<RSSSource> rssSources = pageToRssSourceList(idList);
+        return rssSources;
     }
 
     public Object getRSSListByTitle(int pageNumber, int pageSize, List<String> titleUsers, List<String> titleParses) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        return rssSourceRepository.getRSSListByTitle(pageable, titleUsers, titleParses);
+        Page<Integer> idList = rssSourceRepository.getRSSListByTitle(pageable, titleUsers, titleParses);
+        List<RSSSource> rssSources = pageToRssSourceList(idList);
+        return rssSources;
+    }
+
+    private List<RSSSource> pageToRssSourceList(Page<Integer> rssSourceIdList) {
+        List<Integer> idList = rssSourceIdList.getContent();
+        // todo 同样要避免 tag 和 topic 对 contentitem 递归查询
+        List<RSSSource> rssSources = idList.stream()
+                .map(rssSourceRepository::findById)
+                .map(Optional::get)
+                .map(RSSSource::removeItemsFromEntity)
+                .collect(Collectors.toList());
+        return rssSources;
     }
 
     public Object getContentItems(int pageNumber, int pageSize, List<String> titleUsers, List<String> titleParses,
@@ -163,6 +211,12 @@ public class RSSSourceService {
     private static final String OPML_OUTLINES_XPATH = "opml/body/outline";
     private static final Set<String> OPML_RSS_OUTLINE_ATTRIBUTE_MUST_HAVE = Sets.newHashSet("text", "type", "xmlUrl");
 
+    private static final int DEFAULT_RSS_URL_POOL_CORE_SIZE = 32;
+    private static final int DEFAULT_RSS_URL_POOL_MAX_SIZE = 64;
+    private ExecutorService rssFetchPool = new ThreadPoolExecutor(
+            DEFAULT_RSS_URL_POOL_CORE_SIZE, DEFAULT_RSS_URL_POOL_MAX_SIZE, 5L, TimeUnit.MINUTES,
+            new LinkedBlockingQueue<>());
+
     /**
      * 规范
      * https://webcache.googleusercontent.com/search?q=cache:03ayRFIKowoJ:https://www.cnblogs
@@ -173,7 +227,6 @@ public class RSSSourceService {
      */
     public ErrorMessages addRssSourceFromOpml(Document document) {
         ErrorMessages msg = new ErrorMessages();
-
         // 头部节点
         Node headNode = document.selectSingleNode(OPML_HEAD_XPATH);
         Map<String, String> headValues = null;
@@ -198,12 +251,38 @@ public class RSSSourceService {
             }
         }
 
+        // todo:快速的拉取rss源的信息 目标：10s内600个源被获取(应该在这里计算一个统计数据)
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("rssFeedTestFetch");
         // save rssSource here
-        try {
-            outlines.parallelStream().map(this::opmlOutlineToRssSource).map(rssSourceRepository::save).close();
-        } catch (Exception e) {
-            msg.addMsg("addRssSourceFromOpml error: error to save rssSource to db");
+        List<Callable<ErrorMessages>> xmlCallableList = outlines.parallelStream()
+                .map(outline -> (Callable<ErrorMessages>) () -> {
+                    ErrorMessages rssMsg = new ErrorMessages();
+                    try {
+                        RSSSource rssSource = opmlOutlineToRssSource(outline);
+                        rssSourceRepository.save(rssSource);
+                    } catch (ErrorMsgException e) {
+                        rssMsg.mergeMsg(e.getErrorMessages());
+                    } catch (Exception e) {
+                        rssMsg.addMsg("save rss error, rss:" + outline.get("xmlUrl") + ", exception:" + e.getMessage());
+                    }
+                    return rssMsg;
+                    // todo: 不再写msg，直接把msg记录到一个地方，前端定时请求，返回给前端，每一次记一个 requestId UUID 然后每次请求这个UUID的
+                    //  外部应该能够终止这个传输,前端是通过定时刷新来获取结果的
+                    //  暂时不做这个处理，先把代码流程跑通
+                }).collect(Collectors.toList());
+        List<Future<ErrorMessages>> futureList = xmlCallableList.stream()
+                .map(rssFetchPool::submit)
+                .collect(Collectors.toList());
+        for (Future<ErrorMessages> errorMessagesFuture : futureList) {
+            try {
+                msg.mergeMsg(errorMessagesFuture.get());
+            } catch (Exception e) {
+                msg.addMsg("addRssSourceFromOpml error: error to save rssSource to db");
+            }
         }
+        stopWatch.stop();
+        System.out.println(stopWatch.prettyPrint());
 
         return msg;
     }
@@ -220,10 +299,16 @@ public class RSSSourceService {
     /**
      * 认为text总是存在,当text/title同时存在时,以text为准
      */
-    private RSSSource opmlOutlineToRssSource(Map<String, String> outline) {
+    private RSSSource opmlOutlineToRssSource(Map<String, String> outline) throws ErrorMsgException {
         // xmlUrl和htmlUrl分别表示这个outline的RSS地址和网站地址,不是所有的RSS都有htmlUrl
         String rssUrl = outline.get("xmlUrl");
-        RSSXml rssXml = RSSUtils.getRSSXml(rssUrl);
+        ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssUrl);
+        RSSXml rssXml = result.getLeft();
+        ErrorMessages errorMessages = result.getRight();
+        if (RSSXml.isRSSXMLNotGet(rssXml)) {
+            throw new ErrorMsgException(errorMessages);
+        }
+
         return RSSSource.builder()
                 .url(rssUrl)
                 .titleUser(outline.get("text"))
@@ -248,12 +333,13 @@ public class RSSSourceService {
         Element body = root.addElement("body");
         Iterable<RSSSource> all = rssSourceRepository.findAll();
         ArrayList<RSSSource> rssSources = Lists.newArrayList(all);
-        rssSources.parallelStream().map(rssSource -> body
+        rssSources.parallelStream().forEach(rssSource -> body
                 .addElement("outline")
                 .addAttribute("type", "rss")
                 .addAttribute("text", rssSource.getTitleUser())
                 .addAttribute("xmlUrl", rssSource.getUrl())
-        ).close();
+                .addAttribute("htmlUrl", rssSource.getLink())
+        );
 
         return document;
     }
@@ -270,130 +356,142 @@ public class RSSSourceService {
      * "rssTopics": [ { "rssId":xxx, "topicIds":[1,2,3,4....] } ]
      * }
      */
-    public ErrorMessages addRssSourceFromJson(String json) {
+    public ErrorMessages addRssSourceFromJson(String json) throws JsonProcessingException {
         ErrorMessages msg = new ErrorMessages();
-        JSONObject jsonObject = new JSONObject(json);
-        // JSONObject head = jsonObject.getJSONObject("head");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(json);
+        // JsonNode head = jsonNode.getJSONObject("head");
 
         // 创建tag,解析tag和rss的映射
-        JSONArray tags = jsonObject.getJSONArray("tags");
-        Map<Integer, RSSSourceTag> tagsMap = Maps.newHashMapWithExpectedSize(tags.length());
-        for (int i = 0; i < tags.length(); i++) {
-            JSONObject tagJSONObject = tags.getJSONObject(i);
+        JsonNode tags = jsonNode.get("tags");
+        Map<Integer, RSSSourceTag> tagsMap = Maps.newHashMap();
+        tags.fieldNames().forEachRemaining((tagId) -> {
+            JsonNode tagNode = tags.get(tagId);
+            String name = tagNode.get("name").asText();
+            String descUser = tagNode.get("descUser").asText();
             try {
                 RSSSourceTag rssSourceTag = fetchOrCreateTag(
-                        tagJSONObject.getString("name"),
-                        tagJSONObject.getString("desc")
+                        JacksonUtils.ifNullThenStr(name),
+                        JacksonUtils.ifNullThenStr(descUser)
                 );
-                tagsMap.put(tagJSONObject.getInt("id"), rssSourceTag);
+                tagsMap.put(Integer.parseInt(tagId), rssSourceTag);
             } catch (Exception e) {
-                msg.addMsg("create tag:" + tagJSONObject.getString("name") + " failed");
+                msg.addMsg("create tag failed, json tag id:" + tagId);
             }
-        }
-        JSONArray rssWithTagIds = jsonObject.getJSONArray("rssSourceTags");
-        Map<Integer, List<RSSSourceTag>> rssWithTagIdsMap = Maps.newHashMapWithExpectedSize(rssWithTagIds.length());
-        for (int i = 0; i < rssWithTagIds.length(); i++) {
-            JSONObject rssWithTagIdJSONObject = rssWithTagIds.getJSONObject(i);
-            JSONArray tagIdsJSONObject = rssWithTagIdJSONObject.getJSONArray("tagIds");
-            List<RSSSourceTag> rssSourceTags = tagIdsJSONObject.toList().parallelStream()
-                    .map(o -> (Integer) o)
-                    .map(tagsMap::get)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            rssWithTagIdsMap.put(rssWithTagIdJSONObject.getInt("rssId"), rssSourceTags);
-        }
+        });
+        JsonNode rssTags = jsonNode.get("rssSourceTags");
+        Map<Integer, List<RSSSourceTag>> rssWithTagIdsMap = Maps.newHashMap();
+        rssTags.fieldNames().forEachRemaining((rssId) -> {
+            List<RSSSourceTag> currList = Lists.newArrayList();
+            JsonNode tagNodeList = rssTags.get(rssId);
+            for (final JsonNode tagIdNode : tagNodeList) {
+                currList.add(tagsMap.get(tagIdNode.intValue()));
+            }
+            rssWithTagIdsMap.put(Integer.parseInt(rssId), currList);
+        });
 
         // 创建topic,解析topic和rss的映射
-        JSONArray topics = jsonObject.getJSONArray("topics");
-        Map<Integer, Topic> topicsMap = Maps.newHashMapWithExpectedSize(topics.length());
-        for (int i = 0; i < topics.length(); i++) {
-            JSONObject topicsJSONObject = topics.getJSONObject(i);
+        JsonNode topics = jsonNode.get("topics");
+        Map<Integer, Topic> topicsMap = Maps.newHashMap();
+        topics.fieldNames().forEachRemaining((topicId) -> {
+            JsonNode topicNode = topics.get(topicId);
+            String name = topicNode.get("name").asText();
+            String descUser = topicNode.get("descUser").asText();
             try {
                 Topic topic = fetchOrCreateTopic(
-                        topicsJSONObject.getString("name"),
-                        topicsJSONObject.getString("desc")
+                        JacksonUtils.ifNullThenStr(name),
+                        JacksonUtils.ifNullThenStr(descUser)
                 );
-                topicsMap.put(topicsJSONObject.getInt("id"), topic);
+                topicsMap.put(Integer.parseInt(topicId), topic);
             } catch (Exception e) {
-                msg.addMsg("create tag:" + topicsJSONObject.getString("name") + " failed");
+                msg.addMsg("create topic failed, json topic id:" + topicId);
             }
-        }
-        JSONArray rssWithTopicIds = jsonObject.getJSONArray("rssTopics");
-        Map<Integer, List<Topic>> rssWithTopicIdsMap = Maps.newHashMapWithExpectedSize(rssWithTopicIds.length());
-        for (int i = 0; i < rssWithTopicIds.length(); i++) {
-            JSONObject rssWithTopicIdJSONObject = rssWithTopicIds.getJSONObject(i);
-            JSONArray topicIdsJSONObject = rssWithTopicIdJSONObject.getJSONArray("topicIds");
-            List<Topic> rssSourceTopics = topicIdsJSONObject.toList().parallelStream()
-                    .map(o -> (Integer) o)
-                    .map(topicsMap::get)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            rssWithTopicIdsMap.put(rssWithTopicIdJSONObject.getInt("rssId"), rssSourceTopics);
-        }
+        });
+        JsonNode rssTopic = jsonNode.get("rssTopics");
+        Map<Integer, List<Topic>> rssWithTopicIdsMap = Maps.newHashMap();
+        rssTopic.fieldNames().forEachRemaining((rssId) -> {
+            List<Topic> currList = Lists.newArrayList();
+            JsonNode topicNodeList = rssTopic.get(rssId);
+            for (final JsonNode topicIdNode : topicNodeList) {
+                currList.add(topicsMap.get(topicIdNode.intValue()));
+            }
+            rssWithTopicIdsMap.put(Integer.parseInt(rssId), currList);
+        });
 
         // 构建source并保存source
-        JSONArray sources = jsonObject.getJSONArray("sources");
-        for (int i = 0; i < sources.length(); i++) {
-            JSONObject rssJSONObject = sources.getJSONObject(i);
-            Integer rssId = rssJSONObject.getInt("id");
-            RSSSource rssSource = RSSSource.builder()
-                    .url(rssJSONObject.getString("url"))
-                    .titleUser(rssJSONObject.getString("titleUser"))
-                    .titleParse(rssJSONObject.getString("titleParse"))
-                    .descUser(rssJSONObject.getString("descUser"))
-                    .descParse(rssJSONObject.getString("descParse"))
-                    .link(rssJSONObject.getString("link"))
-                    .image(rssJSONObject.getString("image"))
-                    .generator(rssJSONObject.getString("generator"))
-                    .jsonOptionalExtraFields(rssJSONObject.getString("jsonOptionalExtraFields"))
-                    .fetchAble(rssJSONObject.getBoolean("fetchAble"))
-                    .rssSourceTags(rssWithTagIdsMap.get(rssId))
-                    .rssTopics(rssWithTopicIdsMap.get(rssId))
-                    .build();
-            try {
-                rssSourceRepository.save(rssSource);
-            } catch (Exception e) {
-                msg.addMsg("create rssId:" + rssId + ", titleUser " + rssSource.getTitleUser() + " failed");
+        JsonNode sources = jsonNode.get("sources");
+        if (sources.isArray()){
+            for (final JsonNode sourceNode : sources) {
+                int id = sourceNode.get("id").intValue();
+                RSSSource rssSource = JacksonUtils.objectNodeToRssSource(sourceNode);
+                rssSource.setRssTopics(rssWithTopicIdsMap.get(id));
+                rssSource.setRssSourceTags(rssWithTagIdsMap.get(id));
+                try {
+                    rssSourceRepository.save(rssSource);
+                } catch (Exception e) {
+                    msg.addMsg("create rss failed, in json rssid:" + id + ", titleUser:" + rssSource.getTitleUser());
+                }
             }
         }
+
         return msg;
     }
 
-    public JSONObject exportRssSourceAsJson() {
-        JSONObject outputJson = new JSONObject();
-        outputJson.put("head", new Object());
+    public ObjectNode exportRssSourceAsJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
 
+        // 所有rss列表
         Iterable<RSSSource> all = rssSourceRepository.findAll();
         ArrayList<RSSSource> rssSources = Lists.newArrayList(all);
-        JSONArray rssJsonArray = new JSONArray(rssSources);
-        outputJson.put("sources", rssJsonArray);
+        List<ObjectNode> rssSourcesObjectNode = rssSources.stream()
+                .map(rssSource -> JacksonUtils.rssSourceToObjectNode(rssSource, mapper))
+                .collect(Collectors.toList());
+        ArrayNode rootSourceArrayNode = rootNode.putArray("sources");
+        rootSourceArrayNode.addAll(rssSourcesObjectNode);
 
-        Map<Integer, RSSSourceTag> tagMap = Maps.newHashMap();
-        Map<Integer, Topic> topicMap = Maps.newHashMap();
-        Map<Integer, List<Integer>> rssSourceTagsMap = Maps.newHashMapWithExpectedSize(rssSources.size());
-        Map<Integer, List<Integer>> rssTopicsMap = Maps.newHashMapWithExpectedSize(rssSources.size());
+        // tag和topic以及tagId,topicId和rssId对应
+        Map<String, ObjectNode> tagMap = Maps.newHashMap();
+        Map<String, ObjectNode> topicMap = Maps.newHashMap();
+        Map<String, List<Integer>> rssSourceTagsMap = Maps.newHashMapWithExpectedSize(rssSources.size());
+        Map<String, List<Integer>> rssTopicsMap = Maps.newHashMapWithExpectedSize(rssSources.size());
         for (RSSSource rssSource : rssSources) {
             List<Integer> tagIds = Lists.newArrayListWithCapacity(rssSource.getRssSourceTags().size());
             rssSource.getRssSourceTags().forEach(rssSourceTag -> {
-                tagMap.putIfAbsent(rssSourceTag.getId(), rssSourceTag);
+                tagMap.putIfAbsent(rssSourceTag.getId().toString(), JacksonUtils.tagToObjectNode(rssSourceTag, mapper));
                 tagIds.add(rssSourceTag.getId());
             });
-            rssSourceTagsMap.put(rssSource.getId(), tagIds);
+            if (!tagIds.isEmpty()) {
+                rssSourceTagsMap.put(rssSource.getId().toString(), tagIds);
+            }
 
             List<Integer> topicIds = Lists.newArrayListWithCapacity(rssSource.getRssTopics().size());
             rssSource.getRssTopics().forEach(topic -> {
-                topicMap.putIfAbsent(topic.getId(), topic);
+                topicMap.putIfAbsent(topic.getId().toString(), JacksonUtils.topicToObjectNode(topic, mapper));
                 topicIds.add(topic.getId());
             });
-            rssTopicsMap.put(rssSource.getId(), topicIds);
+            if (!topicIds.isEmpty()) {
+                rssTopicsMap.put(rssSource.getId().toString(), topicIds);
+            }
         }
 
-        outputJson.put("tags", tagMap);
-        outputJson.put("topics", topicMap);
-        outputJson.put("rssSourceTags", rssSourceTagsMap);
-        outputJson.put("rssTopics", rssTopicsMap);
+        rootNode.set("tags", JacksonUtils.mapToObjectNode(tagMap, mapper));
+        rootNode.set("topics", JacksonUtils.mapToObjectNode(topicMap, mapper));
 
-        return outputJson;
+        Map<String, ArrayNode> rssSourceTagsNode = rssSourceTagsMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> JacksonUtils.listToObjectNode(e.getValue(), mapper)
+                ));
+        rootNode.set("rssSourceTags", JacksonUtils.arrayMapToObjectNode(rssSourceTagsNode, mapper));
+        Map<String, ArrayNode> rssTopicsNode = rssTopicsMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> JacksonUtils.listToObjectNode(e.getValue(), mapper)
+                ));
+        rootNode.set("rssTopics", JacksonUtils.arrayMapToObjectNode(rssTopicsNode, mapper));
+
+        return rootNode;
     }
 
     //----------------fetchRSS----------------//
@@ -407,7 +505,7 @@ public class RSSSourceService {
         // fetch rssSourceToEmit from database
         List<RSSSource> rssSources = Lists.newArrayListWithCapacity(rssSourceToEmit.size());
         for (RSSSourceParams rssSource : rssSourceToEmit) {
-            RSSSource source = rssSourceRepository.findByUrl(rssSource.getUrl());
+            RSSSource source = rssSourceRepository.findTopByUrl(rssSource.getUrl());
             if (source != null && source.isFetchAble()) {
                 rssSources.add(source);
             } else {
@@ -421,7 +519,11 @@ public class RSSSourceService {
     private ErrorMessages fetchRSS(List<RSSSource> rssSources) {
         ErrorMessages msg = new ErrorMessages();
         for (RSSSource rssSource : rssSources) {
-            fetchRSSHelp(rssSource);
+            try {
+                fetchRSSHelp(rssSource);
+            } catch (ErrorMsgException e) {
+                msg.mergeMsg(e.getErrorMessages());
+            }
         }
         return msg;
     }
@@ -447,7 +549,13 @@ public class RSSSourceService {
     @SuppressWarnings("DuplicatedCode")
     private void fetchRSSHelp(RSSSource rssSource) {
         // fetch new content
-        RSSXml rssXml = RSSUtils.getRSSXml(rssSource.getUrl());
+        ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssSource.getUrl());
+        RSSXml rssXml = result.getLeft();
+        ErrorMessages errorMessages = result.getRight();
+        if (RSSXml.isRSSXMLNotGet(rssXml)) {
+            throw new ErrorMsgException(errorMessages);
+        }
+
         List<RSSXml.RSSXmlItem> rssXmlItems = rssXml.getItems();
         if (rssXmlItems == null || rssXmlItems.size() <= 0) {
             return;

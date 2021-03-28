@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.highestpeak.dimlight.model.params.GetListBodyParams;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.highestpeak.dimlight.model.enums.SearchTopicType;
+import com.highestpeak.dimlight.model.enums.TopicAndTagSearchType;
 import com.highestpeak.dimlight.model.params.DeleteTopicParams;
 import com.highestpeak.dimlight.model.params.TopicParams;
 import com.highestpeak.dimlight.service.TopicService;
@@ -30,12 +31,12 @@ import com.highestpeak.dimlight.service.TopicService;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/rss/api/topic")
+@RequestMapping("/api/rss/topic")
 public class TopicCrudController {
     @Resource
     private TopicService topicService;
 
-    @DeleteMapping
+    @DeleteMapping("/${url.token}")
     public Object delTopic(@Validated @RequestBody DeleteTopicParams topicParams) {
         return topicService.deleteTopic(topicParams);
     }
@@ -50,13 +51,23 @@ public class TopicCrudController {
         return topicService.newOrUpdateTopic(topicParams);
     }
 
-    @GetMapping
-    public Object getTopic(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize,
-            @RequestParam(value = "searchType", defaultValue = "1") int type,
-            @RequestParam("typeValue") Map<String, Object> typeValue) {
-        if (type == SearchTopicType.NORMAL_LIST.getValue()) {
+    @PostMapping("/get")
+    public Object getTopic(@RequestBody GetListBodyParams getListBodyParams) {
+        int pageSize = getListBodyParams.getPageSize();
+        int pageNum = getListBodyParams.getPageNum();
+        int type = getListBodyParams.getType();
+        Map<String, Object> typeValue = getListBodyParams.getTypeValue();
+
+        if (type == TopicAndTagSearchType.NORMAL_LIST.getValue() || type== TopicAndTagSearchType.NAME.getValue()) {
+            return topicService.getTopicList(pageNum, pageSize);
+        }
+        if (type== TopicAndTagSearchType.RSS_SOURCES.getValue()){
             List<String> topicNames = getParamsValueList(typeValue.get("names"));
-            return topicService.getTopicListByName(pageNum, pageSize, topicNames);
+            return topicService.getRssSourceByTopicName(pageNum,pageSize,topicNames);
+        }
+        if (type== TopicAndTagSearchType.CONTENT_ITEMS.getValue()){
+            List<String> topicNames = getParamsValueList(typeValue.get("names"));
+            return topicService.getContentItemsByTopicName(pageNum,pageSize,topicNames);
         }
         return null;
     }
