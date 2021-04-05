@@ -25,6 +25,7 @@ public class RSSSourceTag extends BaseEntity implements Comparable<RSSSourceTag>
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Lob
     @Column(name = "desc_user")
     private String descUser;
 

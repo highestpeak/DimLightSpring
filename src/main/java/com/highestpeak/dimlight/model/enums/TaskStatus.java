@@ -15,15 +15,15 @@ public enum TaskStatus implements ValueEnum<Integer> {
     ENABLE(2),
 
     /**
-     * 删除(未永久删除)
+     * 暂停
      */
-    RECYCLE(3);
+    PAUSE(3);
 
     /**
      * 默认表示未启用
      * @see TaskStatus#DISABLE
      */
-    public static final String DEFAULT_VALUE = "1";
+    public static final int DEFAULT_VALUE = 1;
 
     private final int value;
 

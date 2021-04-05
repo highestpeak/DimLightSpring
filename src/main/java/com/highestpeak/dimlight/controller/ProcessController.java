@@ -1,46 +1,23 @@
 package com.highestpeak.dimlight.controller;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.highestpeak.dimlight.service.ProcessService;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * 这些可以用 elasticSearch 来做 一个单机节点就够了
- */
+import javax.annotation.Resource;
+
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/process")
 public class ProcessController {
-    /**
-     * 去重
-     */
-    @PutMapping("remove_duplicates")
-    public Object removeDuplicates(){
-        return null;
-    }
+    @Resource
+    private ProcessService processService;
 
     /**
-     * 信息组合
+     * 返回所有可选的 process
      */
-    @PutMapping("info_combination")
-    public Object infoCombination(){
-        return null;
-    }
-
-    /**
-     * 打上分组标签
-     */
-    @PutMapping("mark_group_tag")
-    public Object markGroupTag(){
-        return null;
-    }
-
-    /**
-     * 打上标签
-     */
-    @PutMapping("sort")
-    public Object sortCurrentContent(){
-        return null;
+    @GetMapping("optional")
+    public Object optionalProcessList() {
+        return processService.optionalProcessNames();
     }
 }

@@ -1,11 +1,17 @@
 package com.highestpeak.dimlight.service;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
+import com.highestpeak.dimlight.model.entity.RSSContentItem;
+import com.highestpeak.dimlight.model.entity.RSSSource;
+import com.highestpeak.dimlight.model.pojo.ErrorMessages;
+import com.highestpeak.dimlight.model.pojo.ProcessContext;
+import com.highestpeak.dimlight.model.pojo.RSSXml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,25 +27,104 @@ import com.highestpeak.dimlight.repository.RSSContentItemRepository;
 @Service
 public class ContentItemService {
 
-    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
+    public static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
     @Autowired
     private RSSContentItemRepository contentItemRepository;
 
-    public void delContentByIdList(List<Integer> delIdList) {
-        delIdList.forEach(id -> contentItemRepository.deleteById(id));
+    public ErrorMessages delContentByIdList(List<Integer> delIdList) {
+        ErrorMessages msg = new ErrorMessages();
+        delIdList.forEach(id -> {
+            try {
+                contentItemRepository.deleteById(id);
+            } catch (Exception e){
+                msg.addMsg("删除RssItem异常, id:"+id);
+            }
+        });
+        return msg;
     }
 
-
-    public void delContentOutOfTime(String earliestTimeToLive) {
+    public ErrorMessages delContentOutOfTime(Date earliestTimeToLive) {
+        ErrorMessages msg = new ErrorMessages();
         try {
-            contentItemRepository.deleteByCreateTimeBefore(format.parse(earliestTimeToLive));
-        } catch (ParseException e) {
-            e.printStackTrace();
+            contentItemRepository.deleteByCreateTimeBefore(earliestTimeToLive);
+        } catch (Exception e) {
+            msg.addMsg("删除过期RssItem异常 earliestTimeToLive:"+earliestTimeToLive);
         }
+        return msg;
+    }
+
+    public ErrorMessages delTargetRssContentOutOfTime(RSSSource rssSource, Date earliestTimeToLive) {
+        ErrorMessages msg = new ErrorMessages();
+        try {
+            contentItemRepository.deleteByRssSourceIsAndCreateTimeBefore(rssSource,earliestTimeToLive);
+        } catch (Exception e) {
+            msg.addMsg("删除过期RssItem异常 rss:"+rssSource+", earliestTimeToLive:"+earliestTimeToLive);
+        }
+        return msg;
     }
 
     public Object getContentItemList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
         return contentItemRepository.findList(pageable);
+    }
+
+    public ErrorMessages saveRssXml(ProcessContext processContext) {
+        ErrorMessages msg = new ErrorMessages();
+        RSSSource rssSource = processContext.getRssSource();
+        String itemJsonExtra = rssSource.getJsonOptionalExtraFields();
+
+        List<RSSContentItem> rssContentItems = processContext.getXmlItemList().stream()
+                .map(xmlItemWithId -> {
+                    RSSXml.RSSXmlItem rssXmlItem = xmlItemWithId.getRssXmlItem();
+                    Integer id = xmlItemWithId.getId();
+
+                    return RSSContentItem.builder()
+                            .titleParse(rssXmlItem.getTitle())
+                            .descParse(rssXmlItem.getDescription())
+                            .link(rssXmlItem.getLink())
+                            .guid(rssXmlItem.getGuid())
+                            .pubDate(rssXmlItem.getPubDate())
+                            .author(rssXmlItem.getAuthor())
+                            .jsonOptionalExtraFields(itemJsonExtra)
+                            .rssSource(rssSource)
+                            .rssItemTags(processContext.getXmlTag(id))
+                            .itemTopics(processContext.getXmlTopic(id))
+                            .build();
+                }).collect(Collectors.toList());
+        ErrorMessages errorMessages = saveContentItems(rssContentItems);
+        msg.mergeMsg(errorMessages);
+        return msg;
+    }
+
+    public ErrorMessages saveRssXml(RSSSource rssSource, RSSXml originRssXml) {
+        ErrorMessages msg = new ErrorMessages();
+        List<RSSContentItem> contentItemList = originRssXml.getItems().stream().map(rssXmlItem -> RSSContentItem.builder()
+                .titleParse(rssXmlItem.getTitle())
+                .descParse(rssXmlItem.getDescription())
+                .link(rssXmlItem.getLink())
+                .guid(rssXmlItem.getGuid())
+                .pubDate(rssXmlItem.getPubDate())
+                .author(rssXmlItem.getAuthor())
+                .rssSource(rssSource)
+                .build()).collect(Collectors.toList());
+        ErrorMessages errorMessages = saveContentItems(contentItemList);
+        msg.mergeMsg(errorMessages);
+        return msg;
+    }
+
+    private ErrorMessages saveContentItems(List<RSSContentItem> contentItemList){
+        ErrorMessages msg = new ErrorMessages();
+        contentItemList.forEach(rssContentItem -> {
+            try {
+                RSSContentItem firstByGuid = contentItemRepository.findFirstByGuid(rssContentItem.getGuid());
+                if (firstByGuid!=null){
+                    return;
+                }
+                contentItemRepository.save(rssContentItem);
+            } catch (Exception e){
+                msg.addMsg("保存RssItem异常"+rssContentItem);
+            }
+        });
+        return msg;
     }
 }

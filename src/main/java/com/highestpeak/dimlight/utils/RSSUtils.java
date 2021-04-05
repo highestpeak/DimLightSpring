@@ -40,6 +40,7 @@ public class RSSUtils {
      * 10s超时
      */
     private static RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).build();
+
     /**
      * @param url rss url
      * @return 每个 rss 标签和它对应的值
@@ -69,7 +70,7 @@ public class RSSUtils {
                     InputStream stream = response.getEntity().getContent()
             ) {
                 SyndFeedInput input = new SyndFeedInput();
-                // todo: 会关闭链接，所以需要多尝试几次 抄一下线程池
+                // future: 会关闭链接，所以需要多尝试几次 抄一下线程池
                 SyndFeed feed = input.build(new XmlReader(stream));
                 rssXml = syndFeedToRSSXml(feed);
             }
@@ -100,7 +101,7 @@ public class RSSUtils {
                 .generator(syndFeed.getEncoding());
 
         SyndImage syndFeedImage = syndFeed.getImage();
-        if (syndFeedImage!=null){
+        if (syndFeedImage != null) {
             RSSXml.RSSXmlImage rssXmlImage = RSSXml.RSSXmlImage.builder()
                     .title(syndFeedImage.getTitle())
                     .link(syndFeedImage.getLink())
@@ -114,8 +115,7 @@ public class RSSUtils {
 
         List<SyndEntry> entryList = syndFeed.getEntries();
         List<RSSXml.RSSXmlItem> rssXmlItems = new ArrayList<>(entryList.size());
-        for (SyndEntry syndEntry :
-                entryList) {
+        for (SyndEntry syndEntry : entryList) {
             RSSXml.RSSXmlItem rssXmlItem = RSSXml.RSSXmlItem.builder()
                     .author(syndEntry.getAuthor())
                     .link(syndEntry.getLink())
@@ -124,10 +124,10 @@ public class RSSUtils {
                                     .map(SyndCategory::getName)
                                     .collect(Collectors.toList())
                     )
-                    .description(syndEntry.getDescription().toString())
+                    .description(syndEntry.getDescription().getValue())
                     .pubDate(syndEntry.getPublishedDate())
                     .title(syndEntry.getTitle())
-                    .guid(syndEntry.getUri())
+                    .guid(syndEntry.getUri()) // fixme: 必须保证guid全局唯一
                     .build();
             rssXmlItems.add(rssXmlItem);
         }

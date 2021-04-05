@@ -9,27 +9,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.highestpeak.dimlight.exception.ErrorMsgException;
-import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.entity.Topic;
 import com.highestpeak.dimlight.model.params.DeleteRssParams;
 import com.highestpeak.dimlight.model.params.RSSSourceParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
-import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
 import com.highestpeak.dimlight.repository.RSSSourceRepository;
 import com.highestpeak.dimlight.repository.RSSSourceTagRepository;
 import com.highestpeak.dimlight.repository.TopicRepository;
-import com.highestpeak.dimlight.service.info.process.InfoProcess;
 import com.highestpeak.dimlight.utils.JacksonUtils;
 import com.highestpeak.dimlight.utils.RSSUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.dom4j.*;
 import org.dom4j.tree.AbstractElement;
 import org.dom4j.tree.DefaultElement;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,8 +49,6 @@ public class RSSSourceService {
     private RSSSourceTagRepository rssSourceTagRepository;
     @Resource
     private TopicRepository topicRepository;
-    @Resource
-    private ProcessService processService;
 
     //----------------crud----------------//
 
@@ -117,7 +110,7 @@ public class RSSSourceService {
             if (rssSource.getTitleParse() == null) {
                 ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssSource.getUrl());
                 RSSXml rssXml = result.getLeft();
-                if (RSSXml.isRSSXMLNotGet(rssXml)) {
+                if (RSSXml.isRssXMLNotGet(rssXml)) {
                     throw new Exception();
                 }
                 ErrorMessages resultMsg = result.getRight();
@@ -189,7 +182,6 @@ public class RSSSourceService {
 
     private List<RSSSource> pageToRssSourceList(Page<Integer> rssSourceIdList) {
         List<Integer> idList = rssSourceIdList.getContent();
-        // todo 同样要避免 tag 和 topic 对 contentitem 递归查询
         List<RSSSource> rssSources = idList.stream()
                 .map(rssSourceRepository::findById)
                 .map(Optional::get)
@@ -218,7 +210,7 @@ public class RSSSourceService {
             new LinkedBlockingQueue<>());
 
     /**
-     * 规范
+     * opml规范
      * https://webcache.googleusercontent.com/search?q=cache:03ayRFIKowoJ:https://www.cnblogs
      * .com/dandandan/archive/2006/04/16/376691.html+&cd=2&hl=zh-CN&ct=clnk&gl=hk
      * http://dev.opml.org/spec1.html
@@ -251,7 +243,7 @@ public class RSSSourceService {
             }
         }
 
-        // todo:快速的拉取rss源的信息 目标：10s内600个源被获取(应该在这里计算一个统计数据)
+        // future: 快速的拉取rss源的信息 目标：10s内600个源被获取(应该在这里计算一个统计数据)
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("rssFeedTestFetch");
         // save rssSource here
@@ -267,7 +259,7 @@ public class RSSSourceService {
                         rssMsg.addMsg("save rss error, rss:" + outline.get("xmlUrl") + ", exception:" + e.getMessage());
                     }
                     return rssMsg;
-                    // todo: 不再写msg，直接把msg记录到一个地方，前端定时请求，返回给前端，每一次记一个 requestId UUID 然后每次请求这个UUID的
+                    // future: 不再写msg，直接把msg记录到一个地方，前端定时请求，返回给前端，每一次记一个 requestId UUID 然后每次请求这个UUID的
                     //  外部应该能够终止这个传输,前端是通过定时刷新来获取结果的
                     //  暂时不做这个处理，先把代码流程跑通
                 }).collect(Collectors.toList());
@@ -305,7 +297,7 @@ public class RSSSourceService {
         ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssUrl);
         RSSXml rssXml = result.getLeft();
         ErrorMessages errorMessages = result.getRight();
-        if (RSSXml.isRSSXMLNotGet(rssXml)) {
+        if (RSSXml.isRssXMLNotGet(rssXml)) {
             throw new ErrorMsgException(errorMessages);
         }
 
@@ -346,16 +338,6 @@ public class RSSSourceService {
 
     //----------------json----------------//
 
-    /**
-     * {
-     * "head": {},
-     * "tags": [ { "id":xxx, "name":"xxx", "desc":"xxx" } ],
-     * "topics": [ { "id":xxx, "name":"xxx", "desc":"xxx" } ],
-     * "sources": [ { RSSSource属性名:值 } ],
-     * "rssSourceTags": [ { "rssId":xxx, "tagIds":[1,2,3,4....] } ],
-     * "rssTopics": [ { "rssId":xxx, "topicIds":[1,2,3,4....] } ]
-     * }
-     */
     public ErrorMessages addRssSourceFromJson(String json) throws JsonProcessingException {
         ErrorMessages msg = new ErrorMessages();
         ObjectMapper mapper = new ObjectMapper();
@@ -496,10 +478,16 @@ public class RSSSourceService {
 
     //----------------fetchRSS----------------//
 
-    public ErrorMessages fetchRSSFromInternal(List<RSSSource> rssSourceToEmit) {
+    /**
+     * 内部触发抓取rss
+     */
+    public ImmutablePair<Map<Integer,RSSXml>, ErrorMessages> fetchRSSFromInternal(List<RSSSource> rssSourceToEmit) {
         return fetchRSS(rssSourceToEmit);
     }
 
+    /**
+     * 外部触发抓取rss
+     */
     public ErrorMessages fetchRSSFromParams(List<RSSSourceParams> rssSourceToEmit) {
         ErrorMessages msg = new ErrorMessages();
         // fetch rssSourceToEmit from database
@@ -512,130 +500,41 @@ public class RSSSourceService {
                 msg.addMsg("source not found, source:" + rssSource.getUrl());
             }
         }
-        msg.mergeMsg(fetchRSS(rssSources));
+        // 外部触发不需要返回RssXml
+        // fixme: 如果不返回rssXml，那就也没有保存到数据库，这不就白拉取了
+        msg.mergeMsg(fetchRSS(rssSources).getRight());
         return msg;
     }
 
-    private ErrorMessages fetchRSS(List<RSSSource> rssSources) {
+    private ImmutablePair<Map<Integer,RSSXml>, ErrorMessages> fetchRSS(List<RSSSource> rssSources) {
         ErrorMessages msg = new ErrorMessages();
+        Map<Integer,RSSXml> rssXmlMap = Maps.newHashMapWithExpectedSize(rssSources.size());
         for (RSSSource rssSource : rssSources) {
             try {
-                fetchRSSHelp(rssSource);
+                RSSXml rssXml = fetchRSSHelp(rssSource);
+                rssXmlMap.put(rssSource.getId(),rssXml);
             } catch (ErrorMsgException e) {
                 msg.mergeMsg(e.getErrorMessages());
             }
         }
-        return msg;
+        return new ImmutablePair<>(rssXmlMap, msg);
     }
 
-    /**
-     * process chain from jsonOptionalExtraFields
-     * jsonOptionalExtraFields 的字段解析
-     * "processChain":[
-     * {
-     * "process": "CombineInfoProcess",
-     * "args": ...
-     * },
-     * {...},
-     * {
-     * "process": "DuplicateRemoveProcess",
-     * "args": ...
-     * }
-     * ]
-     *
-     * @see RSSSourceParams#getJsonOptionalExtraFields()
-     * @see RSSSource#getJsonOptionalExtraFields()
-     */
-    @SuppressWarnings("DuplicatedCode")
-    private void fetchRSSHelp(RSSSource rssSource) {
-        // fetch new content
+    private RSSXml fetchRSSHelp(RSSSource rssSource) {
+        // 拉取rss内容
         ImmutablePair<RSSXml, ErrorMessages> result = RSSUtils.getRSSXml(rssSource.getUrl());
         RSSXml rssXml = result.getLeft();
         ErrorMessages errorMessages = result.getRight();
-        if (RSSXml.isRSSXMLNotGet(rssXml)) {
+        if (RSSXml.isRssXMLNotGet(rssXml)) {
             throw new ErrorMsgException(errorMessages);
         }
 
         List<RSSXml.RSSXmlItem> rssXmlItems = rssXml.getItems();
         if (rssXmlItems == null || rssXmlItems.size() <= 0) {
-            return;
+            throw new RuntimeException("没有找到rss内容");
         }
 
-        // get process chain from jsonOptionalExtraFields
-        Queue<InfoProcess> infoProcessQueue = processService.buildProcessQueue(rssSource);
-
-        // process rss xml items
-        List<RSSContentItem> rssContentItems = null;
-        if (infoProcessQueue == null) {
-            rssContentItems = convertNoProcessRSSXmlItem(rssSource, rssXmlItems);
-        } else {
-            List<RSSContentItemProcess> rssContentItemProcesses = convertRSSXmlItem(rssXmlItems);
-            while (infoProcessQueue.size() > 0) {
-                InfoProcess nextProcess = infoProcessQueue.poll();
-                // process 完后 可能会产生新的数据
-                rssContentItemProcesses = nextProcess.process(rssContentItemProcesses, rssSource);
-                if (rssContentItemProcesses.size() <= 0) {
-                    return;
-                }
-            }
-            rssContentItems = convertRSSContentItem(rssSource, rssContentItemProcesses);
-        }
-
-        // save content
-        // todo: 这里必须要向 es 写入一份数据
-        // esContentRepository.saveAll(convertToEsContent(rssContentItems));
-        // contentItemRepository.saveAll(rssContentItems);
-    }
-
-    private List<RSSContentItemProcess> convertRSSXmlItem(List<RSSXml.RSSXmlItem> rssXmlItems) {
-        List<RSSContentItemProcess> rssContentItems = new ArrayList<>(rssXmlItems.size());
-        for (RSSXml.RSSXmlItem rssXmlItem : rssXmlItems) {
-            rssContentItems.add(RSSContentItemProcess.builder()
-                    .title(rssXmlItem.getTitle())
-                    .description(rssXmlItem.getDescription())
-                    .link(rssXmlItem.getLink())
-                    .guid(rssXmlItem.getGuid())
-                    .pubDate(rssXmlItem.getPubDate())
-                    .author(rssXmlItem.getAuthor())
-                    .build()
-            );
-        }
-        return rssContentItems;
-    }
-
-    private List<RSSContentItem> convertNoProcessRSSXmlItem(RSSSource rssSource, List<RSSXml.RSSXmlItem> rssXmlItems) {
-        List<RSSContentItem> rssContentItems = new ArrayList<>(rssXmlItems.size());
-        for (RSSXml.RSSXmlItem rssXmlItem : rssXmlItems) {
-            rssContentItems.add(RSSContentItem.builder()
-                    .titleParse(rssXmlItem.getTitle())
-                    .descParse(rssXmlItem.getDescription())
-                    .link(rssXmlItem.getLink())
-                    .guid(rssXmlItem.getGuid())
-                    .pubDate(rssXmlItem.getPubDate())
-                    .author(rssXmlItem.getAuthor())
-                    .rssSource(rssSource)
-                    .build()
-            );
-        }
-        return rssContentItems;
-    }
-
-    private List<RSSContentItem> convertRSSContentItem(RSSSource rssSource, List<RSSContentItemProcess> rssXmlItems) {
-        List<RSSContentItem> rssContentItems = new ArrayList<>(rssXmlItems.size());
-        for (RSSContentItemProcess rssXmlItem : rssXmlItems) {
-            rssContentItems.add(RSSContentItem.builder()
-                    .titleParse(rssXmlItem.getTitle())
-                    .descParse(rssXmlItem.getDescription())
-                    .link(rssXmlItem.getLink())
-                    .guid(rssXmlItem.getGuid())
-                    .pubDate(rssXmlItem.getPubDate())
-                    .author(rssXmlItem.getAuthor())
-                    .jsonOptionalExtraFields(rssXmlItem.getJsonOptionalExtraFields())
-                    .rssSource(rssSource)
-                    .build()
-            );
-        }
-        return rssContentItems;
+        return rssXml;
     }
 
 }

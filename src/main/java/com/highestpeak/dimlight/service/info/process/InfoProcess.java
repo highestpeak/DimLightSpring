@@ -1,19 +1,16 @@
 package com.highestpeak.dimlight.service.info.process;
 
-import com.highestpeak.dimlight.model.entity.RSSSource;
-import com.highestpeak.dimlight.model.pojo.RSSContentItemProcess;
-
-import java.util.List;
+import com.highestpeak.dimlight.model.pojo.ProcessContext;
+import org.springframework.stereotype.Component;
 
 /**
  * @author highestpeak
  */
+@Component
 public interface InfoProcess {
     /**
      * 流程处理的通用逻辑,返回处理后的 rssXmlItem
-     * @param rssXmlItemList
-     * @param rssSource
-     * @return
+     * @param processContext 拉取到的rss xml内容
      */
-    List<RSSContentItemProcess> process(List<RSSContentItemProcess> rssXmlItemList, RSSSource rssSource);
+    void process(ProcessContext processContext);
 }

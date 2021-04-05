@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.controller;
 
+import com.google.common.collect.Lists;
 import com.highestpeak.dimlight.model.enums.TopicAndTagSearchType;
 import com.highestpeak.dimlight.model.params.DeleteTagParams;
 import com.highestpeak.dimlight.model.params.GetListBodyParams;
@@ -56,6 +57,13 @@ public class TagCrudController {
             return tagService.getContentItemsByTagName(pageNum,pageSize,topicNames);
         }
         return null;
+    }
+
+    @GetMapping("/waiting_read")
+    public Object waitingRead() {
+        int pageSize = 100;
+        int pageNum = 0;
+        return tagService.getContentItemsByTagName(pageNum,pageSize, Lists.newArrayList("稍后再读"));
     }
 
     private <T> List<T> getParamsValueList(Object paramsValue) {

@@ -22,6 +22,7 @@ public class OutOfTimeTaskWarning extends BaseEntity{
     /**
      * RSS Source 地址
      */
+    @Lob
     @Column(name = "url", nullable = false)
     private String url;
 }

@@ -2,6 +2,7 @@ package com.highestpeak.dimlight.repository;
 
 import java.util.Date;
 
+import com.highestpeak.dimlight.model.entity.RSSSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,8 @@ public interface RSSContentItemRepository extends CrudRepository<RSSContentItem,
 
     @Query("select i from rss_content_item i")
     Page<RSSContentItem> findList(Pageable pageable);
+
+    void deleteByRssSourceIsAndCreateTimeBefore(RSSSource rssSource,Date createTime);
+
+    RSSContentItem findFirstByGuid(String guid);
 }

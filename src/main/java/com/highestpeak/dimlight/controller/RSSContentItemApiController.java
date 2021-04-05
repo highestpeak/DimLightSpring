@@ -1,7 +1,9 @@
 package com.highestpeak.dimlight.controller;
 
+import java.text.ParseException;
 import java.util.List;
 
+import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +24,8 @@ public class RSSContentItemApiController {
      * 由 web 前端页面控制台触发，删除指定的 ContentItem
      */
     @DeleteMapping("/${url.token}")
-    public Object delContentItem(List<Integer> delIdList){
-        contentItemService.delContentByIdList(delIdList);
-        return null;
+    public Object delContentItem(List<Integer> delIdList) {
+        return contentItemService.delContentByIdList(delIdList);
     }
 
     /**
@@ -33,9 +34,15 @@ public class RSSContentItemApiController {
      * 例如 超过 默认/专属 设定的最大保存时间就删除
      */
     @PutMapping("count_whether_need_del")
-    public Object countItemWhetherDel(String earliestTimeToLive){
-        contentItemService.delContentOutOfTime(earliestTimeToLive);
-        return null;
+    @Deprecated
+    public Object countItemWhetherDel(String earliestTimeToLive) {
+        ErrorMessages errorMessages = new ErrorMessages();
+        try {
+            errorMessages.mergeMsg(contentItemService.delContentOutOfTime(ContentItemService.format.parse(earliestTimeToLive)));
+        } catch (ParseException e) {
+            errorMessages.addMsg("时间格式不正确");
+        }
+        return errorMessages;
     }
 
     /**
@@ -43,7 +50,7 @@ public class RSSContentItemApiController {
      * 所有的 item 列表
      */
     @GetMapping("list")
-    public Object getContentItemList(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize){
+    public Object getContentItemList(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize) {
         return contentItemService.getContentItemList(pageNum, pageSize);
     }
 }

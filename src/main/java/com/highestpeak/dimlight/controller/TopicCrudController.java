@@ -27,7 +27,6 @@ import com.highestpeak.dimlight.service.TopicService;
 /**
  * @author zhangjike <zhangjike@kuaishou.com>
  * Created on 2021-03-10
- * todo
  */
 @RestController
 @CrossOrigin

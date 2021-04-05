@@ -93,7 +93,6 @@ public class TopicService {
 
     private List<Topic> pageToTagList(Page<Integer> tagIdList) {
         List<Integer> idList = tagIdList.getContent();
-        // todo 同样要避免 tag 和 topic 对 contentitem 递归查询
         List<Topic> rssSources = idList.stream()
                 .map(topicRepository::findById)
                 .map(Optional::get)

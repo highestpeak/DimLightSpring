@@ -119,12 +119,12 @@ public class RSSSourceApiController {
                 hasOpmlContent = true;
             } catch (DocumentException e) {
                 // log exception
-                errorMessages.addMsg("opml in string read error");
+                errorMessages.addMsg("解析opml字符串错误");
             }
         }
 
         if (opmlUrls != null) {
-            // todo 这个地方可能也会太慢了，应该开启多线程，http的请求总是很慢，前端链接早就关闭了
+            // future: 这个地方可能也会太慢了，应该开启多线程，http的请求总是很慢，前端链接早就关闭了
             //  并且应该能够开启进度提示
             opmlUrls.parallelStream().map(s -> {
                 try {
@@ -146,7 +146,7 @@ public class RSSSourceApiController {
         if (!hasOpmlContent) {
             errorMessages.addMsg("no opml content find");
         }
-        // todo: msg应当返回 rss标题 链接 + msg，只返回msg，信息太乱
+        // future: msg应当返回 rss标题 链接 + msg，只返回msg，信息太乱
         return errorMessages;
     }
 

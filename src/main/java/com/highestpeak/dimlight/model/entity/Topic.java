@@ -23,6 +23,7 @@ public class Topic extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Lob
     @Column(name = "desc_user")
     private String descUser;
 

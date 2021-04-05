@@ -23,7 +23,7 @@ public class RSSXml {
     private String copyright;
 
     /**
-     * todo 时区问题
+     * fixme: 时区问题
      */
     private Date pubDate;
     private String ttl;
@@ -69,7 +69,7 @@ public class RSSXml {
         return "value:not impl";
     }
 
-    public static boolean isRSSXMLNotGet(RSSXml rssXml) {
+    public static boolean isRssXMLNotGet(RSSXml rssXml) {
         return rssXml == null || rssXml == DEFAULT_RSS_XML;
     }
 }

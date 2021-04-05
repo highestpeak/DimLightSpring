@@ -27,12 +27,14 @@ public class RSSContentItem extends BaseEntity{
     @Column(name = "title_parse", nullable = false)
     private String titleParse;
 
+    @Lob
     @Column(name = "desc_parse", nullable = false)
     private String descParse;
 
     /**
      * 新闻链接 RSSContent链接
      */
+    @Lob
     @Column(name = "link", nullable = false)
     private String link;
 
@@ -58,6 +60,7 @@ public class RSSContentItem extends BaseEntity{
      * 可选的（除必要的标签外，所有的标签，都提取出来，保存到一个额外字段）
      * 例如 category、comments 等
      */
+    @Lob
     @Column(name = "json_optional_extra_fields")
     private String jsonOptionalExtraFields;
 

@@ -1,6 +1,5 @@
 package com.highestpeak.dimlight.service;
 
-import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.params.DeleteTagParams;
 import com.highestpeak.dimlight.model.params.TagParams;
@@ -88,7 +87,6 @@ public class TagService {
 
     private List<RSSSourceTag> pageToTagList(Page<Integer> tagIdList) {
         List<Integer> idList = tagIdList.getContent();
-        // todo 同样要避免 tag 和 topic 对 contentitem 递归查询
         List<RSSSourceTag> rssSources = idList.stream()
                 .map(sourceTagRepository::findById)
                 .map(Optional::get)

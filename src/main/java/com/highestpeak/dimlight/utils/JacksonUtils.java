@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.entity.Topic;
+import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,13 @@ public class JacksonUtils {
         return currNode;
     }
 
+    public static ArrayNode errorMsgToObjectNode(ErrorMessages msg, ObjectMapper mapper) {
+        ArrayNode currNode = mapper.createArrayNode();
+        msg.getMessages().forEach(currNode::add);
+        msg.getNoErrorMsg().forEach(currNode::add);
+        return currNode;
+    }
+
     public static ObjectNode mapToObjectNode(Map<String, ObjectNode> map, ObjectMapper mapper) {
         ObjectNode currNode = mapper.createObjectNode();
         map.forEach(currNode::set);
@@ -64,18 +72,22 @@ public class JacksonUtils {
 
     public static RSSSource objectNodeToRssSource(JsonNode sourceNode){
         RSSSource rssSource = RSSSource.builder()
-                .url(sourceNode.get("url").toString())
-                .titleUser(sourceNode.get("titleUser").toString())
-                .titleParse(sourceNode.get("titleParse").toString())
-                .descUser(sourceNode.get("descUser").toString())
-                .descParse(sourceNode.get("descParse").toString())
-                .link(sourceNode.get("link").toString())
-                .image(sourceNode.get("image").toString())
-                .generator(sourceNode.get("generator").toString())
-                .jsonOptionalExtraFields(sourceNode.get("jsonOptionalExtraFields").toString())
+                .url(rssFieldRightStr("url",sourceNode))
+                .titleUser(rssFieldRightStr("titleUser",sourceNode))
+                .titleParse(rssFieldRightStr("titleParse",sourceNode))
+                .descUser(rssFieldRightStr("descUser",sourceNode))
+                .descParse(rssFieldRightStr("descParse",sourceNode))
+                .link(rssFieldRightStr("link",sourceNode))
+                .image(rssFieldRightStr("image",sourceNode))
+                .generator(rssFieldRightStr("generator",sourceNode))
+                .jsonOptionalExtraFields(rssFieldRightStr("jsonOptionalExtraFields",sourceNode))
                 .fetchAble(sourceNode.get("fetchAble").asBoolean())
                 .build();
         return rssSource;
+    }
+
+    private static String rssFieldRightStr(String fieldName, JsonNode sourceNode) {
+        return ifNullThenStr(sourceNode.get(fieldName).asText());
     }
 
     public static String ifNullThenStr(String jsonStr){

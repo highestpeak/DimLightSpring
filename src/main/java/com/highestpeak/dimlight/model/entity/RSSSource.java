@@ -26,6 +26,7 @@ public class RSSSource extends BaseEntity {
     /**
      * RSS Source 地址
      */
+    @Lob
     @Column(name = "url", nullable = false)
     private String url;
 
@@ -41,21 +42,25 @@ public class RSSSource extends BaseEntity {
     @Column(name = "title_parse", nullable = false)
     private String titleParse;
 
+    @Lob
     @Column(name = "desc_user")
     private String descUser;
 
+    @Lob
     @Column(name = "desc_parse")
     private String descParse;
 
     /**
      * 网站主页链接
      */
+    @Lob
     @Column(name = "link")
     private String link;
 
     /**
      * 描述图片连接
      */
+    @Lob
     @Column(name = "image")
     private String image;
 
@@ -69,6 +74,7 @@ public class RSSSource extends BaseEntity {
      * 可选的（除 item 上述标签 外，所有的标签，保存到的一个额外字段）
      * 例如 copyright、pubDate、ttl、language、generator、category
      */
+    @Lob
     @Column(name = "json_optional_extra_fields")
     private String jsonOptionalExtraFields;
 
