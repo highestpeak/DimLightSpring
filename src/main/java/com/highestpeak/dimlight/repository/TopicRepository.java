@@ -27,6 +27,6 @@ public interface TopicRepository extends CrudRepository<Topic, Integer> {
 
     void deleteByName(String topicName);
 
-    @Query("select r.id from topic r")
-    Page<Integer> findList(Pageable pageable);
+    @Query("select r from topic r")
+    Page<Topic> findList(Pageable pageable);
 }

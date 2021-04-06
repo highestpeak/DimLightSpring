@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.entity.Topic;
+import com.highestpeak.dimlight.model.enums.TaskOutputCacheCycle;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 
 import java.util.List;
@@ -95,5 +96,12 @@ public class JacksonUtils {
             return null;
         }
         return jsonStr;
+    }
+
+    public static ObjectNode cacheCycleToObjectNode(TaskOutputCacheCycle taskOutputCacheCycle, ObjectMapper mapper) {
+        ObjectNode currNode = mapper.createObjectNode();
+        currNode.put("days", taskOutputCacheCycle.getDays());
+        currNode.put("desc", taskOutputCacheCycle.getDesc());
+        return currNode;
     }
 }

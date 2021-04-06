@@ -26,6 +26,6 @@ public interface RSSSourceTagRepository extends CrudRepository<RSSSourceTag,Inte
     @Query("select t.id,t.name,t.rssContentItems from rss_source_tag t where t.name in :tagNames")
     List<RSSSourceTag> findItemsByTagNames(List<String> tagNames);
 
-    @Query("select r.id from rss_source_tag r")
-    Page<Integer> findList(Pageable pageable);
+    @Query("select r from rss_source_tag r")
+    Page<RSSSourceTag> findList(Pageable pageable);
 }

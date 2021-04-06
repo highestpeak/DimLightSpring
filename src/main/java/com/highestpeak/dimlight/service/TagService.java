@@ -73,25 +73,16 @@ public class TagService {
         return rssByTopicNames.stream().flatMap(topic -> topic.getRssSources().stream()).collect(Collectors.toList());
     }
 
-    public Object getContentItemsByTagName(int pageNum, int pageSize, List<String> topicNames) {
+    public Object getContentItemsByTagName(int pageNumber, int pageSize, List<String> topicNames) {
         List<RSSSourceTag> itemsByTopic = sourceTagRepository.findItemsByTagNames(topicNames);
         return itemsByTopic.stream().flatMap(topic -> topic.getRssContentItems().stream()).collect(Collectors.toList());
     }
 
     public Object getTagList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        Page<Integer> idList = sourceTagRepository.findList(pageable);
-        List<RSSSourceTag> rssSources = pageToTagList(idList);
-        return rssSources;
+        Page<RSSSourceTag> sourceTagPage = sourceTagRepository.findList(pageable);
+        sourceTagPage.getContent().forEach(RSSSourceTag::removeItemsFromEntity);
+        return sourceTagPage;
     }
 
-    private List<RSSSourceTag> pageToTagList(Page<Integer> tagIdList) {
-        List<Integer> idList = tagIdList.getContent();
-        List<RSSSourceTag> rssSources = idList.stream()
-                .map(sourceTagRepository::findById)
-                .map(Optional::get)
-                .map(RSSSourceTag::removeItemsFromEntity)
-                .collect(Collectors.toList());
-        return rssSources;
-    }
 }

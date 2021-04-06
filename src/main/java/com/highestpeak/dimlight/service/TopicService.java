@@ -86,18 +86,8 @@ public class TopicService {
 
     public Object getTopicList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        Page<Integer> idList = topicRepository.findList(pageable);
-        List<Topic> rssSources = pageToTagList(idList);
-        return rssSources;
-    }
-
-    private List<Topic> pageToTagList(Page<Integer> tagIdList) {
-        List<Integer> idList = tagIdList.getContent();
-        List<Topic> rssSources = idList.stream()
-                .map(topicRepository::findById)
-                .map(Optional::get)
-                .map(Topic::removeItemsFromEntity)
-                .collect(Collectors.toList());
-        return rssSources;
+        Page<Topic> topicPage = topicRepository.findList(pageable);
+        topicPage.getContent().forEach(Topic::removeItemsFromEntity);
+        return topicPage;
     }
 }

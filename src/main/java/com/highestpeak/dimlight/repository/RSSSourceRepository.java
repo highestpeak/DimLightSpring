@@ -26,12 +26,12 @@ public interface RSSSourceRepository extends CrudRepository<RSSSource, Integer> 
 
     void deleteByTitleUser(String titleUser);
 
-    @Query("select r.id from rss_source r")
-    Page<Integer> findList(Pageable pageable);
+    @Query("select r from rss_source r")
+    Page<RSSSource> findList(Pageable pageable);
 
-    @Query("select r.id from rss_source r "
+    @Query("select r from rss_source r "
             + "where r.titleUser in :titleUsers or r.titleParse in :titleParses")
-    Page<Integer> getRSSListByTitle(Pageable pageable, List<String> titleUsers, List<String> titleParses);
+    Page<RSSSource> getRSSListByTitle(Pageable pageable, List<String> titleUsers, List<String> titleParses);
 
     @Query("select r.contentItems from rss_source r where r.id in :ids and r.titleUser in :titleUsers or r.titleParse in :titleParses")
     Page<RSSContentItem> getTargetRSSForContentItems(Pageable pageable, List<String> titleUsers, List<String> titleParses,

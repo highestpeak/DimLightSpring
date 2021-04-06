@@ -1,8 +1,13 @@
 package com.highestpeak.dimlight;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
+import com.highestpeak.dimlight.model.enums.TaskOutputCacheCycle;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
+import com.highestpeak.dimlight.utils.JacksonUtils;
 import com.highestpeak.dimlight.utils.RSSUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.util.Lists;
@@ -28,8 +33,8 @@ public class SimpleTest {
 //        String s = Arrays.toString(RSSSourceStatus.values());
 //        System.out.println(EnumUtils.getEnumMap(TaskStatus.class).keySet());
 
-        ImmutablePair<RSSXml, ErrorMessages> rssXml = RSSUtils.getRSSXml("http://iamsujie.com/feed/");
-        System.out.println("rssXml.getTitle() = " + rssXml.getLeft().getTitle());
+        //ImmutablePair<RSSXml, ErrorMessages> rssXml = RSSUtils.getRSSXml("http://iamsujie.com/feed/");
+        //System.out.println("rssXml.getTitle() = " + rssXml.getLeft().getTitle());
 
 //        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 //        factory.setValidating(true);
@@ -99,6 +104,15 @@ public class SimpleTest {
 
 //        parseOpml();
 
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+
+        ArrayNode rootSourceArrayNode = rootNode.putArray("cacheCycleEnum");
+        List<ObjectNode> cacheCycleNodeList = Arrays.stream(TaskOutputCacheCycle.values()).map(
+                taskOutputCacheCycle -> JacksonUtils.cacheCycleToObjectNode(taskOutputCacheCycle, mapper)
+        ).collect(Collectors.toList());
+        rootSourceArrayNode.addAll(cacheCycleNodeList);
+        System.out.println();
     }
 
     public static void parseOpml() throws Exception {

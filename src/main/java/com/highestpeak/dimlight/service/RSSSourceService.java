@@ -58,16 +58,19 @@ public class RSSSourceService {
         // 查找现有id
         int id = -1;
         Date originCreatetime = null;
+        String originLink = null;
         RSSSource rssSource = rssSourceRepository.findByTitleUser(rssSourceParams.getTitleUser());
         if (rssSource == null) {
             rssSource = rssSourceRepository.findTopByUrl(rssSourceParams.getUrl());
             if (rssSource != null) {
                 id = rssSource.getId();
                 originCreatetime = rssSource.getCreateTime();
+                originLink = rssSource.getLink();
             }
         } else {
             id = rssSource.getId();
             originCreatetime = rssSource.getCreateTime();
+            originLink = rssSource.getLink();
         }
 
         // 构建rssSource
@@ -83,6 +86,7 @@ public class RSSSourceService {
         if (id != -1) {
             rssSource.setId(id);
             rssSource.setCreateTime(originCreatetime == null ? new Date() : originCreatetime);
+            rssSource.setLink(originLink);
         }
 
         // 更新tags
@@ -168,26 +172,16 @@ public class RSSSourceService {
 
     public Object getRSSList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        Page<Integer> idList = rssSourceRepository.findList(pageable);
-        List<RSSSource> rssSources = pageToRssSourceList(idList);
-        return rssSources;
+        Page<RSSSource> rssSourcePage = rssSourceRepository.findList(pageable);
+        rssSourcePage.getContent().forEach(RSSSource::removeItemsFromEntity);
+        return rssSourcePage;
     }
 
     public Object getRSSListByTitle(int pageNumber, int pageSize, List<String> titleUsers, List<String> titleParses) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
-        Page<Integer> idList = rssSourceRepository.getRSSListByTitle(pageable, titleUsers, titleParses);
-        List<RSSSource> rssSources = pageToRssSourceList(idList);
-        return rssSources;
-    }
-
-    private List<RSSSource> pageToRssSourceList(Page<Integer> rssSourceIdList) {
-        List<Integer> idList = rssSourceIdList.getContent();
-        List<RSSSource> rssSources = idList.stream()
-                .map(rssSourceRepository::findById)
-                .map(Optional::get)
-                .map(RSSSource::removeItemsFromEntity)
-                .collect(Collectors.toList());
-        return rssSources;
+        Page<RSSSource> rssSourcePage = rssSourceRepository.getRSSListByTitle(pageable, titleUsers, titleParses);
+        rssSourcePage.getContent().forEach(RSSSource::removeItemsFromEntity);
+        return rssSourcePage;
     }
 
     public Object getContentItems(int pageNumber, int pageSize, List<String> titleUsers, List<String> titleParses,

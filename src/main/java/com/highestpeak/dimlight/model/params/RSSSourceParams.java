@@ -6,9 +6,6 @@ import javax.validation.constraints.NotBlank;
 
 import org.hibernate.validator.constraints.URL;
 
-import com.highestpeak.dimlight.model.params.validation.ImageValidator;
-import com.highestpeak.dimlight.model.params.validation.JsonValidator;
-
 import lombok.Data;
 
 /**
@@ -28,7 +25,7 @@ public class RSSSourceParams {
     private String titleUser;
     private String descUser;
 
-    @ImageValidator
+    //@ImageValidator
     private String image;
 
     @NotBlank
