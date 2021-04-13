@@ -80,4 +80,8 @@ public class QuartzManager {
         scheduler.deleteJob(jobKey);
     }
 
+    public void triggerJobNow(JobKey jobKey) throws SchedulerException {
+        scheduler.triggerJob(jobKey);
+    }
+
 }

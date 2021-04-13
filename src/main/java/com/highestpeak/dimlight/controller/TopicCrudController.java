@@ -71,6 +71,11 @@ public class TopicCrudController {
         return null;
     }
 
+    @GetMapping("/topic_rss_group")
+    public Object getTopicRssGroup() {
+        return topicService.getTopicRssGroup();
+    }
+
     private <T> List<T> getParamsValueList(Object paramsValue) {
         if (paramsValue.getClass().isArray()) {
             return (List<T>) Arrays.asList(paramsValue);

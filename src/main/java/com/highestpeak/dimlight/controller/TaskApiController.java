@@ -30,6 +30,11 @@ public class TaskApiController {
         return taskService.newOrUpdateRssTask(rssFetchTaskParams);
     }
 
+    @PutMapping("/update_all_rss")
+    public Object allRssFetchNow(){
+        return taskService.allRssFetchNow();
+    }
+
     /**
      * 仅仅是rss抓取task
      */

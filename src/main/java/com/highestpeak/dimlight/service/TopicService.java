@@ -1,11 +1,19 @@
 package com.highestpeak.dimlight.service;
 
-import com.highestpeak.dimlight.model.entity.RSSSourceTag;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.highestpeak.dimlight.model.entity.BaseEntity;
+import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.Topic;
 import com.highestpeak.dimlight.model.params.DeleteTopicParams;
 import com.highestpeak.dimlight.model.params.TopicParams;
 import com.highestpeak.dimlight.model.pojo.ErrorMessages;
+import com.highestpeak.dimlight.model.vo.TopicRssWithFeedCount;
 import com.highestpeak.dimlight.repository.TopicRepository;
+import com.highestpeak.dimlight.utils.JacksonUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,9 +21,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -89,5 +98,46 @@ public class TopicService {
         Page<Topic> topicPage = topicRepository.findList(pageable);
         topicPage.getContent().forEach(Topic::removeItemsFromEntity);
         return topicPage;
+    }
+
+    public Object getTopicRssGroup() {
+        Map<Integer, List<Integer>> topicRssMap = Maps.newHashMap();
+        Map<Integer, Topic> topicMap = Maps.newHashMap();
+        Map<Integer, RSSSource> rssSourceMap = Maps.newHashMap();
+
+        topicRepository.findAll().forEach(topic -> {
+            topicMap.put(topic.getId(), topic);
+            ArrayList<Integer> rssIdList = Lists.newArrayList();
+            List<RSSSource> rssSources = topic.getRssSources();
+            for (RSSSource rssSource : rssSources) {
+                rssSourceMap.put(rssSource.getId(), rssSource);
+                rssIdList.add(rssSource.getId());
+            }
+            topicRssMap.put(topic.getId(), rssIdList);
+        });
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+
+        // {topic id : topic}
+        Map<String, ObjectNode> topicNodeMap = Maps.newHashMap();
+        topicMap.forEach((topicId, topic) -> {
+            topicNodeMap.put(topicId.toString(), JacksonUtils.topicToObjectNode(topic, mapper));
+        });
+        rootNode.set("topics", JacksonUtils.mapToObjectNode(topicNodeMap, mapper));
+        // {topic id : [rss id 1,rss id 2,rss id 3...]]
+        Map<String, ArrayNode> topicRssNodeMap = Maps.newHashMap();
+        topicRssMap.forEach((topicId, rssIds) -> {
+            topicRssNodeMap.put(topicId.toString(), JacksonUtils.listToObjectNode(rssIds, mapper));
+        });
+        rootNode.set("topicRss", JacksonUtils.arrayMapToObjectNode(topicRssNodeMap, mapper));
+        // {rss id:TopicRssWithFeedCount}
+        Map<String, ObjectNode> rssNodeMap = Maps.newHashMap();
+        rssSourceMap.forEach((rssId, rssSource) -> {
+            rssNodeMap.put(rssId.toString(), JacksonUtils.rssSourceCountToObjectNode(rssSource, mapper));
+        });
+        rootNode.set("rss", JacksonUtils.mapToObjectNode(rssNodeMap, mapper));
+
+        return rootNode;
     }
 }

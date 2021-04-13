@@ -76,13 +76,17 @@ public class TaskService {
                     }
                     dataMap.put("rssSourceId", rssSourceId);
                     dataMap.put("taskId", savedTask.getId());
+                    JobKey taskJobKey = getTaskJobKey(savedTask);
                     quartzManager.scheduleJob(QuartzTask.builder()
                             .cronExpression(savedTask.getSchedule())
                             .description(savedTask.getDescUser())
                             .jobClass(RssFetchJob.class)
                             .jobDataMap(QuartzUtils.getJobDataMap(dataMap))
-                            .jobKey(getTaskJobKey(savedTask))
+                            .jobKey(taskJobKey)
                             .build());
+                    if (taskParams.isFetchNow()){
+                        quartzManager.triggerJobNow(taskJobKey);
+                    }
                 } catch (SchedulerException e) {
                     msg.addMsg(ErrorMessages.buildExceptionMsg("启动Task时发生错误", e));
                 }
@@ -132,5 +136,18 @@ public class TaskService {
 
     private JobKey getTaskJobKey(Task task) {
         return JobKey.jobKey(task.getName(), task.getGroup());
+    }
+
+    public Object allRssFetchNow() {
+        ErrorMessages msg = new ErrorMessages();
+        Iterable<Task> all = taskRepository.findAll();
+        all.forEach(task -> {
+            try {
+                quartzManager.triggerJobNow(getTaskJobKey(task));
+            } catch (SchedulerException e) {
+                msg.addMsg("trigger task failed. task:"+task.getName());
+            }
+        });
+        return msg;
     }
 }

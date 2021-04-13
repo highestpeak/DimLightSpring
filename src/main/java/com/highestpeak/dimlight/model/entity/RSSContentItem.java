@@ -41,6 +41,7 @@ public class RSSContentItem extends BaseEntity{
     /**
      * guid>GUID=Globally Unique Identifier 为当前新闻指定一个全球唯一标示
      */
+    @Lob
     @Column(name = "guid", nullable = false)
     private String guid;
 

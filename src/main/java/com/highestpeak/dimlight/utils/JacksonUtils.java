@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.RSSSourceTag;
 import com.highestpeak.dimlight.model.entity.Topic;
@@ -103,5 +104,27 @@ public class JacksonUtils {
         currNode.put("days", taskOutputCacheCycle.getDays());
         currNode.put("desc", taskOutputCacheCycle.getDesc());
         return currNode;
+    }
+
+    public static ObjectNode contentItemToObjectNode(RSSContentItem contentItem, ObjectMapper mapper) {
+        ObjectNode currNode = mapper.createObjectNode();
+        currNode.put("id", contentItem.getId());
+        currNode.put("createTime", contentItem.getCreateTime().toString());
+        currNode.put("updateTime", contentItem.getUpdateTime().toString());
+        currNode.put("titleParse", contentItem.getTitleParse());
+        currNode.put("descParse", contentItem.getDescParse());
+        currNode.put("link", contentItem.getLink());
+        currNode.put("guid", contentItem.getGuid());
+        currNode.put("pubDate", contentItem.getPubDate().toString());
+        currNode.put("author", contentItem.getAuthor());
+        currNode.put("jsonOptionalExtraFields", contentItem.getJsonOptionalExtraFields());
+        currNode.put("rssId", contentItem.getRssSource().getId());
+        return currNode;
+    }
+
+    public static ObjectNode rssSourceCountToObjectNode(RSSSource rssSource, ObjectMapper mapper) {
+        ObjectNode rssSourceNode = rssSourceToObjectNode(rssSource, mapper);
+        rssSourceNode.put("count", rssSource.getContentItems().size());
+        return rssSourceNode;
     }
 }

@@ -18,4 +18,5 @@ public class RssFetchTaskParams {
      * 与之关联的rssId
      */
     private Integer rssSourceId;
+    private boolean fetchNow=true;
 }
