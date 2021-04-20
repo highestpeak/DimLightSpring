@@ -47,6 +47,7 @@ public class RSSContentItem extends BaseEntity{
 
     /**
      * 新闻最后发布时间
+     * todo: date format 必须指定一个固定的格式，不然各个rss源产生的不一样，最后解析不方便
      */
     @Column(name = "pub_date", nullable = false)
     private Date pubDate;

@@ -119,6 +119,7 @@ public class JacksonUtils {
         currNode.put("author", contentItem.getAuthor());
         currNode.put("jsonOptionalExtraFields", contentItem.getJsonOptionalExtraFields());
         currNode.put("rssId", contentItem.getRssSource().getId());
+        currNode.put("sourceName", contentItem.getRssSource().getTitleParse());
         return currNode;
     }
 

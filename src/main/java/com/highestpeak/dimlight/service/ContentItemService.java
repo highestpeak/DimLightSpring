@@ -77,7 +77,7 @@ public class ContentItemService {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         ArrayNode rootSourceArrayNode = rootNode.putArray("feedItemBeans");
-        ArrayList<RSSContentItem> rssContentItems = Lists.newArrayList(contentItemRepository.findAll());
+        ArrayList<RSSContentItem> rssContentItems = Lists.newArrayList(contentItemRepository.findAllLimitSize(PageRequest.of(0,40)));
         List<ObjectNode> contentItemNodes = rssContentItems.stream()
                 .map(rssContentItem -> JacksonUtils.contentItemToObjectNode(rssContentItem, mapper))
                 .collect(Collectors.toList());
