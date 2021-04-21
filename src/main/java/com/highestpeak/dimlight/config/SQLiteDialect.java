@@ -27,7 +27,7 @@ import java.sql.Types;
 /**
  * @author highestpeak
  */
-@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "SpellCheckingInspection"})
+@SuppressWarnings({"SpellCheckingInspection"})
 public class SQLiteDialect extends Dialect {
     private final UniqueDelegate uniqueDelegate;
 
@@ -175,7 +175,7 @@ public class SQLiteDialect extends Dialect {
     private static final int SQLITE_MISMATCH = 20;
     private static final int SQLITE_NOTADB = 26;
 
-    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
+
     @Override
     public SQLExceptionConversionDelegate buildSQLExceptionConversionDelegate() {
         //noinspection Convert2Lambda
@@ -315,7 +315,7 @@ public class SQLiteDialect extends Dialect {
         }
     }
 
-    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
+
     @Override
     public String getSelectGUIDString() {
         return "select hex(randomblob(16))";

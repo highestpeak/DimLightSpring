@@ -1,9 +1,13 @@
 package com.highestpeak.dimlight.repository;
 
-import com.highestpeak.dimlight.model.entity.Task;
-import org.springframework.data.repository.CrudRepository;
+import com.highestpeak.dimlight.model.entity.MobiusTask;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface TaskRepository extends CrudRepository<Task,Integer> {
-    Task findByName(String name);
-    Task findBySchedule(String schedule);
+import java.util.List;
+
+public interface TaskRepository extends PagingAndSortingRepository<MobiusTask,Integer> {
+
+    List<MobiusTask> findByTaskType(int type);
+
+    MobiusTask findByTaskTypeAndTaskOperator(int taskType, int taskOperator);
 }

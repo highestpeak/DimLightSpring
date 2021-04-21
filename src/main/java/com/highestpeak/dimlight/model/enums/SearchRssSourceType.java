@@ -7,6 +7,7 @@ import lombok.Getter;
  * Created on 2021-03-13
  */
 @Getter
+@Deprecated
 public enum SearchRssSourceType {
     NORMAL_LIST(1, "普通分页查找list"),
     TITLE(2, "搜素对应标题的Rss"),

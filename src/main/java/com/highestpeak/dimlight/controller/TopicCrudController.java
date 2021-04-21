@@ -7,20 +7,13 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.highestpeak.dimlight.factory.MessageFactory;
 import com.highestpeak.dimlight.model.params.GetListBodyParams;
+import com.highestpeak.dimlight.model.pojo.InfoMessages;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.highestpeak.dimlight.model.enums.TopicAndTagSearchType;
-import com.highestpeak.dimlight.model.params.DeleteTopicParams;
 import com.highestpeak.dimlight.model.params.TopicParams;
 import com.highestpeak.dimlight.service.TopicService;
 
@@ -35,21 +28,67 @@ public class TopicCrudController {
     @Resource
     private TopicService topicService;
 
-    @DeleteMapping("/${url.token}")
-    public Object delTopic(@Validated @RequestBody DeleteTopicParams topicParams) {
-        return topicService.deleteTopic(topicParams);
+    /**
+     * 删除Topic
+     */
+    @DeleteMapping("/")
+    public Object delTopic(@RequestParam("id") int id) {
+        return topicService.deleteTopic(id);
     }
 
+    /**
+     * 更新Topic
+     */
     @PutMapping
     public Object updateTopic(@Validated @RequestBody TopicParams topicParams) {
         return topicService.newOrUpdateTopic(topicParams);
     }
 
+    /**
+     * 新的Topic
+     */
     @PostMapping
     public Object newTopic(@Validated @RequestBody TopicParams topicParams) {
         return topicService.newOrUpdateTopic(topicParams);
     }
 
+    /**
+     * 获取所有的Topic
+     */
+    @GetMapping("/all")
+    public Object getAllTopic(@RequestParam("pageNum") int pageNum,@RequestParam("pageSize") int pageSize) {
+        return topicService.getTopicList(pageNum, pageSize);
+    }
+
+    /**
+     * 获取指定id的Topic
+     */
+    @GetMapping("/id")
+    public Object getTopicById(@RequestParam("id") String id) {
+        try {
+            return topicService.getTopicById(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            return MessageFactory.PARAMETER_ERROR_MSG;
+        }
+    }
+
+    /**
+     * 搜索指定内容的Topic
+     * todo
+     */
+    @GetMapping("/search")
+    public Object searchTag(@RequestParam("content") String content) {
+        try {
+            return topicService.searchByContent(content);
+        } catch (Exception e) {
+            return new InfoMessages(InfoMessages.buildExceptionMsg("服务器发生错误", e));
+        }
+    }
+
+    /**
+     * 废弃
+     */
+    @Deprecated
     @PostMapping("/get")
     public Object getTopic(@RequestBody GetListBodyParams getListBodyParams) {
         int pageSize = getListBodyParams.getPageSize();

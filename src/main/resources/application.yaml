@@ -64,3 +64,8 @@ spring:
 
 # 某些重要操作所需的密钥
 url.token: lxhjoi2974o0snxgt
+proxy:
+  hostname: 127.0.0.1
+  port: 1080
+  scheme: http
+  

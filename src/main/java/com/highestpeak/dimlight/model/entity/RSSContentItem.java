@@ -2,17 +2,14 @@ package com.highestpeak.dimlight.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author highestpeak
  */
 @EqualsAndHashCode(callSuper = true)
-@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_content_item")
 @Table(name = "rss_content_item", indexes = {
         @Index(name = "rss_content_item_pub_date", columnList = "pub_date"),
@@ -42,14 +39,14 @@ public class RSSContentItem extends BaseEntity{
      * guid>GUID=Globally Unique Identifier 为当前新闻指定一个全球唯一标示
      */
     @Lob
-    @Column(name = "guid", nullable = false)
+    @Column(name = "guid", nullable = false, unique = true)
     private String guid;
 
     /**
      * 新闻最后发布时间
-     * todo: date format 必须指定一个固定的格式，不然各个rss源产生的不一样，最后解析不方便
      */
     @Column(name = "pub_date", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date pubDate;
 
     /**
@@ -67,29 +64,9 @@ public class RSSContentItem extends BaseEntity{
     private String jsonOptionalExtraFields;
 
     @ToString.Exclude
-    @JsonIgnoreProperties("contentItems")
+    @JsonIgnoreProperties({"contentItems"})
     @ManyToOne
     @JoinColumn(name="rss_source_id", nullable=false)
     private RSSSource rssSource;
 
-    @ToString.Exclude
-    @JsonIgnoreProperties("rssContentItems")
-    @ManyToMany
-    @JoinTable(
-            name = "item_and_tag",
-            joinColumns = @JoinColumn(name = "item_id"),
-            inverseJoinColumns = @JoinColumn(name = "type_id"))
-    private List<RSSSourceTag> rssItemTags;
-
-    /**
-     * 分组/主题：topic
-     */
-    @ToString.Exclude
-    @JsonIgnoreProperties("rssContentItems")
-    @ManyToMany
-    @JoinTable(
-            name = "item_and_topic",
-            joinColumns = @JoinColumn(name = "item_id"),
-            inverseJoinColumns = @JoinColumn(name = "topic_id"))
-    private List<Topic> itemTopics;
 }

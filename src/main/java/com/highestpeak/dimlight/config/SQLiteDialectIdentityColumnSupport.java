@@ -7,7 +7,6 @@ import org.hibernate.dialect.identity.IdentityColumnSupportImpl;
 /**
  * @author highestpeak
  */
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public class SQLiteDialectIdentityColumnSupport extends IdentityColumnSupportImpl {
     @SuppressWarnings("unused")
     public SQLiteDialectIdentityColumnSupport(Dialect dialect) {

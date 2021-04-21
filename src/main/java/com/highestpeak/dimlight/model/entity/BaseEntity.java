@@ -19,6 +19,7 @@ public class BaseEntity {
 
     /**
      * Create time.
+     * TemporalType.TIMESTAMP 保证按照同一个时间格式：日期+时间 存储时间
      */
     @Column(name = "create_time")
     @Temporal(TemporalType.TIMESTAMP)

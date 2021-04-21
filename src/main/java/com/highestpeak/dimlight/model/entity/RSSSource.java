@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
@@ -8,9 +9,8 @@ import java.util.List;
 
 /**
  * @author highestpeak
- * RSS来源(可以添加的RSS订阅)（用户可控的）
+ * RSS信息源
  */
-@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "JpaDataSourceORMInspection"})
 @Entity(name = "rss_source")
 @Table(name = "rss_source", indexes = {
         @Index(name = "rss_source_generator", columnList = "generator"),
@@ -90,35 +90,32 @@ public class RSSSource extends BaseEntity {
      */
     @ToString.Exclude
     @JsonIgnoreProperties("rssSource")
-    @OneToMany(mappedBy = "rssSource")
+    @JsonIgnore
+    @OneToMany(mappedBy = "rssSource", fetch = FetchType.LAZY)
     private List<RSSContentItem> contentItems;
 
     /**
      * 标签
      */
     @ToString.Exclude
-    @JsonIgnoreProperties("rssSources")
+    @JsonIgnoreProperties({"rssSources", "topics"})
     @ManyToMany
     @JoinTable(
-            name = "source_and_tag",
-            joinColumns = @JoinColumn(name = "source_id"),
-            inverseJoinColumns = @JoinColumn(name = "type_id"))
-    private List<RSSSourceTag> rssSourceTags;
+            name = "rss_and_tag",
+            joinColumns = @JoinColumn(name = "rss_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private List<MobiusTag> mobiusTags;
 
     /**
      * 分组/主题：topic
      */
     @ToString.Exclude
-    @JsonIgnoreProperties("rssSources")
+    @JsonIgnoreProperties({"rssSources", "mobiusTags"})
     @ManyToMany
     @JoinTable(
-            name = "source_and_topic",
-            joinColumns = @JoinColumn(name = "source_id"),
+            name = "rss_and_topic",
+            joinColumns = @JoinColumn(name = "rss_id"),
             inverseJoinColumns = @JoinColumn(name = "topic_id"))
-    private List<Topic> rssTopics;
+    private List<MobiusTopic> rssMobiusTopics;
 
-    public RSSSource removeItemsFromEntity() {
-        this.contentItems.clear();
-        return this;
-    }
 }

@@ -29,7 +29,6 @@ public class SQLiteMetadataBuilderInitializer implements MetadataBuilderInitiali
 
     static private final SQLiteDialect DIALECT = new SQLiteDialect();
 
-    @SuppressWarnings("AlibabaUndefineMagicConstant")
     static private final DialectResolver RESOLVER = (DialectResolver) info -> {
         if ("SQLite".equals(info.getDatabaseName())) {
             return DIALECT;

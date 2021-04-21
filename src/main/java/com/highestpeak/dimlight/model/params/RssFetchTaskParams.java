@@ -1,22 +1,22 @@
 package com.highestpeak.dimlight.model.params;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class RssFetchTaskParams {
-    private Integer id;
+public class RssFetchTaskParams extends BaseTaskParams{
 
-    private String schedule;
-    private String name;
-    private String group;
-    private String descUser;
-    private int cacheCycle;
-    private boolean autoDownload;
-
+    /**
+     * 启动task但是不一定立刻拉取
+     */
     private boolean startTask=true;
+    /**
+     * 立刻拉取
+     */
+    private boolean fetchNow=true;
     /**
      * 与之关联的rssId
      */
     private Integer rssSourceId;
-    private boolean fetchNow=true;
 }

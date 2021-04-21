@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.highestpeak.dimlight.model.entity.RSSContentItem;
 import com.highestpeak.dimlight.model.entity.RSSSource;
-import com.highestpeak.dimlight.model.entity.RSSSourceTag;
-import com.highestpeak.dimlight.model.entity.Topic;
-import com.highestpeak.dimlight.model.enums.TaskOutputCacheCycle;
-import com.highestpeak.dimlight.model.pojo.ErrorMessages;
+import com.highestpeak.dimlight.model.entity.MobiusTag;
+import com.highestpeak.dimlight.model.entity.MobiusTopic;
+import com.highestpeak.dimlight.model.enums.TaskOutputCacheCycleEnum;
+import com.highestpeak.dimlight.model.pojo.InfoMessages;
 
 import java.util.List;
 import java.util.Map;
@@ -33,17 +33,17 @@ public class JacksonUtils {
         return currNode;
     }
 
-    public static ObjectNode tagToObjectNode(RSSSourceTag tag, ObjectMapper mapper) {
+    public static ObjectNode tagToObjectNode(MobiusTag mobiusTag, ObjectMapper mapper) {
         ObjectNode currNode = mapper.createObjectNode();
-        currNode.put("name", tag.getName());
-        currNode.put("descUser", tag.getDescUser());
+        currNode.put("name", mobiusTag.getName());
+        currNode.put("descUser", mobiusTag.getDescUser());
         return currNode;
     }
 
-    public static ObjectNode topicToObjectNode(Topic topic, ObjectMapper mapper) {
+    public static ObjectNode topicToObjectNode(MobiusTopic mobiusTopic, ObjectMapper mapper) {
         ObjectNode currNode = mapper.createObjectNode();
-        currNode.put("name", topic.getName());
-        currNode.put("descUser", topic.getDescUser());
+        currNode.put("name", mobiusTopic.getName());
+        currNode.put("descUser", mobiusTopic.getDescUser());
         return currNode;
     }
 
@@ -53,10 +53,10 @@ public class JacksonUtils {
         return currNode;
     }
 
-    public static ArrayNode errorMsgToObjectNode(ErrorMessages msg, ObjectMapper mapper) {
+    public static ArrayNode errorMsgToObjectNode(InfoMessages msg, ObjectMapper mapper) {
         ArrayNode currNode = mapper.createArrayNode();
-        msg.getMessages().forEach(currNode::add);
-        msg.getNoErrorMsg().forEach(currNode::add);
+        msg.getErrorMsg().forEach(currNode::add);
+        msg.getInfoMsg().forEach(currNode::add);
         return currNode;
     }
 
@@ -99,10 +99,10 @@ public class JacksonUtils {
         return jsonStr;
     }
 
-    public static ObjectNode cacheCycleToObjectNode(TaskOutputCacheCycle taskOutputCacheCycle, ObjectMapper mapper) {
+    public static ObjectNode cacheCycleToObjectNode(TaskOutputCacheCycleEnum taskOutputCacheCycleEnum, ObjectMapper mapper) {
         ObjectNode currNode = mapper.createObjectNode();
-        currNode.put("days", taskOutputCacheCycle.getDays());
-        currNode.put("desc", taskOutputCacheCycle.getDesc());
+        currNode.put("days", taskOutputCacheCycleEnum.getDays());
+        currNode.put("desc", taskOutputCacheCycleEnum.getDesc());
         return currNode;
     }
 

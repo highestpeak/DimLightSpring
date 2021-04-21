@@ -11,7 +11,6 @@ import lombok.Data;
 /**
  * @author highestpeak
  */
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 @Data
 public class RSSSourceParams {
     @URL
@@ -26,6 +25,9 @@ public class RSSSourceParams {
     private String descUser;
 
     //@ImageValidator
+    /**
+     * todo: 可以采用json格式解析image
+     */
     private String image;
 
     @NotBlank

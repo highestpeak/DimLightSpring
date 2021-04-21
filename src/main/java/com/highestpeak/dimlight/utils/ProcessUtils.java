@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Queues;
-import com.highestpeak.dimlight.service.info.process.InfoProcess;
+import com.highestpeak.dimlight.exception.ErrorMsgException;
+import com.highestpeak.dimlight.service.process.InfoProcess;
 
 import java.util.Map;
 import java.util.Queue;
@@ -16,16 +17,22 @@ public class ProcessUtils {
      * {...,"process":["xxx","yyy",...],...}
      * future:暂时只做顺序处理，不做并行的process
      */
-    public static Queue<InfoProcess> buildProcessQueue(
-            String jsonContainsProcess, Map<String, InfoProcess> processMap
-    ) throws JsonProcessingException {
+    public static Queue<InfoProcess> buildProcessQueue(String jsonContainsProcess, Map<String, InfoProcess> processMap)
+            throws JsonProcessingException {
         Queue<InfoProcess> processQueue = Queues.newArrayDeque();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(jsonContainsProcess);
         JsonNode process = jsonNode.get("process");
+        if (process==null) {
+            return processQueue;
+        }
         for (final JsonNode processNameNode : process) {
             String processName = processNameNode.textValue();
-            processQueue.add(processMap.get(processName));
+            if (processMap.containsKey(processName)) {
+                processQueue.add(processMap.get(processName));
+            } else {
+                throw new ErrorMsgException("处理名不存在 处理名：" + processName);
+            }
         }
         return processQueue;
     }

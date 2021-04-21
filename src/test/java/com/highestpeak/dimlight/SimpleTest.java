@@ -1,21 +1,10 @@
 package com.highestpeak.dimlight;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.highestpeak.dimlight.model.entity.RSSSourceTag;
-import com.highestpeak.dimlight.model.enums.TaskOutputCacheCycle;
-import com.highestpeak.dimlight.model.pojo.ErrorMessages;
-import com.highestpeak.dimlight.model.pojo.RSSXml;
-import com.highestpeak.dimlight.utils.JacksonUtils;
-import com.highestpeak.dimlight.utils.RSSUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import com.highestpeak.dimlight.model.entity.MobiusTag;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.dom4j.*;
-import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.AbstractElement;
 import org.dom4j.tree.DefaultElement;
 
@@ -26,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("CommentedOutCode")
 public class SimpleTest {
     public static void main(String[] args) throws Exception {
 //        Arrays.stream(RSSSourceStatus.values()).forEach(System.out::println);
@@ -104,15 +92,17 @@ public class SimpleTest {
 
 //        parseOpml();
 
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode rootNode = mapper.createObjectNode();
+        //ObjectMapper mapper = new ObjectMapper();
+        //ObjectNode rootNode = mapper.createObjectNode();
+        //
+        //ArrayNode rootSourceArrayNode = rootNode.putArray("cacheCycleEnum");
+        //List<ObjectNode> cacheCycleNodeList = Arrays.stream(TaskOutputCacheCycle.values()).map(
+        //        taskOutputCacheCycle -> JacksonUtils.cacheCycleToObjectNode(taskOutputCacheCycle, mapper)
+        //).collect(Collectors.toList());
+        //rootSourceArrayNode.addAll(cacheCycleNodeList);
+        //System.out.println();
 
-        ArrayNode rootSourceArrayNode = rootNode.putArray("cacheCycleEnum");
-        List<ObjectNode> cacheCycleNodeList = Arrays.stream(TaskOutputCacheCycle.values()).map(
-                taskOutputCacheCycle -> JacksonUtils.cacheCycleToObjectNode(taskOutputCacheCycle, mapper)
-        ).collect(Collectors.toList());
-        rootSourceArrayNode.addAll(cacheCycleNodeList);
-        System.out.println();
+        //new RSSSourceJsonExtraFieldsHelp(new RSSSource());
     }
 
     public static void parseOpml() throws Exception {
@@ -160,7 +150,7 @@ public class SimpleTest {
     public static void test1() {
         String dbStr = String.join(",", Arrays.asList("blog", "ugc", "video"));
         StringTokenizer tokenizer = new StringTokenizer(dbStr, ",");
-        List<RSSSourceTag> result = new ArrayList<>(tokenizer.countTokens());
+        List<MobiusTag> result = new ArrayList<>(tokenizer.countTokens());
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
 //            result.add(new RSSSourceType(token,null));

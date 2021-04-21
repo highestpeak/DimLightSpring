@@ -1,13 +1,12 @@
 package com.highestpeak.dimlight.controller;
 
-import java.text.ParseException;
-import java.util.List;
+import java.util.Date;
 
-import com.highestpeak.dimlight.model.pojo.ErrorMessages;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.highestpeak.dimlight.service.ContentItemService;
+import com.highestpeak.dimlight.service.RssContentItemService;
+
+import javax.annotation.Resource;
 
 /**
  * @author highestpeak
@@ -17,40 +16,47 @@ import com.highestpeak.dimlight.service.ContentItemService;
 @RequestMapping("/api/rss/content_item")
 public class RSSContentItemApiController {
 
-    @Autowired
-    private ContentItemService contentItemService;
+    @Resource
+    private RssContentItemService rssContentItemService;
 
     /**
-     * 由 web 前端页面控制台触发，删除指定的 ContentItem
+     * 删除指定的 ContentItem
      */
-    @DeleteMapping("/${url.token}")
-    public Object delContentItem(List<Integer> delIdList) {
-        return contentItemService.delContentByIdList(delIdList);
+    @DeleteMapping("/")
+    public Object delContentItem(Integer delId) {
+        return rssContentItemService.delContentByIdList(delId);
     }
 
     /**
-     * huginn 定时获取数量来删除过多的数量,如果过多就触发删除 contentItem
-     * 删除可以有不同的逻辑和表达式
-     * 例如 超过 默认/专属 设定的最大保存时间就删除
+     * 删除此时间点之前的所有的RSSContentItem
      */
-    @PutMapping("count_whether_need_del")
-    @Deprecated
-    public Object countItemWhetherDel(String earliestTimeToLive) {
-        ErrorMessages errorMessages = new ErrorMessages();
-        try {
-            errorMessages.mergeMsg(contentItemService.delContentOutOfTime(ContentItemService.format.parse(earliestTimeToLive)));
-        } catch (ParseException e) {
-            errorMessages.addMsg("时间格式不正确");
-        }
-        return errorMessages;
+    @PutMapping("/del_before")
+    public Object delContentItemBefore(@RequestParam("delBarrier") Date delBarrier) {
+        return rssContentItemService.delContentItemBefore(delBarrier);
     }
 
     /**
-     * android 端获取 contentItem
-     * 所有的 item 列表
+     * 删除指定RSS的contentItem
+     * future: getmapping to putmapping
      */
-    @GetMapping("list")
+    @GetMapping("/del_target_rss")
+    public Object delTargetRssContentItem(@RequestParam("id") int id) {
+        return rssContentItemService.delTargetRssContentItem(id);
+    }
+
+    /**
+     * 获取所有的RSSContentItem
+     */
+    @GetMapping("/list")
     public Object getContentItemList(@RequestParam("pageNum") int pageNum, @RequestParam("pageSize") int pageSize) {
-        return contentItemService.getContentItemList(pageNum, pageSize);
+        return rssContentItemService.getContentItemList(pageNum, pageSize);
+    }
+
+    /**
+     * 获取特定RSS的RSSContentItem
+     */
+    @GetMapping("/target_rss")
+    public Object getTargetRssContentItem(@RequestParam("rssId") int rssId,@RequestParam("num") int num) {
+        return rssContentItemService.getTargetRssContentItem(rssId, num);
     }
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
  * Created on 2021-03-14
  */
 @Getter
+@Deprecated
 public enum TopicAndTagSearchType {
     NORMAL_LIST(1, "普通分页查找list"),
     NAME(2, "搜素对应名称的Topic或Tag"),

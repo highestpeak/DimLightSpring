@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
+@Deprecated
 public class GetListBodyParams {
     private int pageNum;
     private int pageSize;

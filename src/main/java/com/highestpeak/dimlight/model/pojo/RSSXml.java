@@ -13,7 +13,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public class RSSXml {
     public static final RSSXml DEFAULT_RSS_XML = new RSSXml();
 
@@ -71,5 +70,9 @@ public class RSSXml {
 
     public static boolean isRssXMLNotGet(RSSXml rssXml) {
         return rssXml == null || rssXml == DEFAULT_RSS_XML;
+    }
+
+    public static boolean isItemsBlank(RSSXml rssXml) {
+        return rssXml==null || rssXml.getItems() == null || rssXml.getItems().size() == 0;
     }
 }
