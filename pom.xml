@@ -5,6 +5,7 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>DimLight</module>
+		<module>DocAbstract</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
