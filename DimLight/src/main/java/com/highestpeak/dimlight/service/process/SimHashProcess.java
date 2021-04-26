@@ -19,20 +19,20 @@ public class SimHashProcess implements InfoProcess{
 
     @Override
     public void process(ProcessContext processContext) {
-        Map<Integer, List<WordSegmentProcess.WordInfo>> xmlWithItWordFreq = processContext.getTopWordFreq();
+        Map<Integer, List<DescWordSegmentProcess.WordInfo>> xmlWithItWordFreq = processContext.getTopWordFreq();
         if (processContext.getSimhashMap()==null) {
             processContext.setSimhashMap(Maps.newHashMapWithExpectedSize(xmlWithItWordFreq.size()));
         }
         Map<Integer, String> simhashMap = processContext.getSimhashMap();
-        for (Map.Entry<Integer, List<WordSegmentProcess.WordInfo>> wordInfoEntry : xmlWithItWordFreq.entrySet()) {
+        for (Map.Entry<Integer, List<DescWordSegmentProcess.WordInfo>> wordInfoEntry : xmlWithItWordFreq.entrySet()) {
             Integer xmlId = wordInfoEntry.getKey();
-            List<WordSegmentProcess.WordInfo> wordInfoList = wordInfoEntry.getValue();
+            List<DescWordSegmentProcess.WordInfo> wordInfoList = wordInfoEntry.getValue();
             String simHash = simHash(wordInfoList);
             simhashMap.put(xmlId, simHash);
         }
     }
 
-    private String simHash(List<WordSegmentProcess.WordInfo> words) {
+    private String simHash(List<DescWordSegmentProcess.WordInfo> words) {
         float[] hashBit = new float[hashBitCount];
         words.forEach(word -> {
             float weight = word.getWeight();

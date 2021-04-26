@@ -3,7 +3,7 @@ package com.highestpeak.dimlight.model.pojo;
 import com.highestpeak.dimlight.model.entity.RSSSource;
 import com.highestpeak.dimlight.model.entity.MobiusTag;
 import com.highestpeak.dimlight.service.process.DuplicateRemoveProcess;
-import com.highestpeak.dimlight.service.process.WordSegmentProcess;
+import com.highestpeak.dimlight.service.process.DescWordSegmentProcess;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,7 +22,8 @@ public class ProcessContext {
     private Map<Integer, RSSXml.RSSXmlItem> xmlItemList;
     private Map<Integer, List<MobiusTag>> xmlTags;
 
-    private Map<Integer, List<WordSegmentProcess.WordInfo>> topWordFreq;
+    private Map<Integer, List<String>> titleWord;
+    private Map<Integer, List<DescWordSegmentProcess.WordInfo>> topWordFreq;
     private Map<Integer, String> simhashMap;
     private Map<Integer, String> summaryMap;
     private PriorityQueue<DuplicateRemoveProcess.SimhashDuplicateXmlItemList> simhashDuplicateXmlItemList;

@@ -4,7 +4,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Lob;
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author highestpeak
@@ -28,11 +28,21 @@ public class MobiusContentItem extends BaseEntity{
 
     /**
      * 分词结果
+     * 标题分词结果
+     * 标题所有分词
+     */
+    @Lob
+    @Column(name = "title_segment")
+    private List<String> titleSegment;
+
+    /**
+     * 分词结果
+     * 描述/内容分词结果
      * 取最重要的前100个词
      */
     @Lob
     @Column(name = "word_segment")
-    private Set<String> wordSegments;
+    private List<String> wordSegments;
 
     /**
      * 文档simhash

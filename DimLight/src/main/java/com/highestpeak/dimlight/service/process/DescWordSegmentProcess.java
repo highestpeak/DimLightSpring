@@ -19,9 +19,10 @@ import java.util.PriorityQueue;
 /**
  * 分词处理
  * 分词并进行排序
+ * 处理的是内容的分词
  */
 @Component
-public class WordSegmentProcess implements InfoProcess {
+public class DescWordSegmentProcess implements InfoProcess {
     private static int WORD_COUNT_POLL = 100;
 
     @Override
