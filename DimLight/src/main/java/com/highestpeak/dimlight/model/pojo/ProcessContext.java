@@ -39,4 +39,8 @@ public class ProcessContext {
         private Integer id;
         private RSSXml.RSSXmlItem rssXmlItem;
     }
+
+    public boolean isResultEmpty() {
+        return xmlItemList.isEmpty();
+    }
 }

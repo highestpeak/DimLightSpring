@@ -4,8 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.highestpeak.dimlight.model.pojo.ProcessContext;
 import com.highestpeak.dimlight.model.pojo.RSSXml;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -93,6 +92,7 @@ public class DuplicateRemoveProcess implements InfoProcess {
      * 重复的内容项
      */
     @Data
+    @AllArgsConstructor(access = AccessLevel.PACKAGE)
     @Builder
     public static class SimhashDuplicateXmlItemList implements Comparable<SimhashDuplicateXmlItemList>{
         private int score;

@@ -1,8 +1,10 @@
 package com.highestpeak.dimlight.model.entity;
 
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Lob;
 import java.util.List;
 
@@ -10,6 +12,13 @@ import java.util.List;
  * @author highestpeak
  * 最终阅读的条目
  */
+@Entity(name = "mobius_content_item")
+@Data
+@Builder
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class MobiusContentItem extends BaseEntity{
     /**
      * 描述图片链接
@@ -62,8 +71,17 @@ public class MobiusContentItem extends BaseEntity{
     private int originContentType;
 
     /**
-     * 源内容类型id
+     * 源内容id
+     * 源产生的内容的id
      */
     @Column(name = "origin_content_id", nullable = false)
     private int originContentId;
+
+    /**
+     * 源id
+     * 产生内容的源的id
+     */
+    @Column(name = "origin_source_id", nullable = false)
+    private int originSourceId;
+
 }

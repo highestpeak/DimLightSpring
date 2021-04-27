@@ -1,5 +1,6 @@
 package com.highestpeak.dimlight.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
@@ -29,7 +30,7 @@ public class MobiusTopic extends BaseEntity {
 
     @ToString.Exclude
     @JsonIgnoreProperties("rssMobiusTopics")
-    @ManyToMany(mappedBy = "rssMobiusTopics")
+    @ManyToMany(mappedBy = "rssMobiusTopics", fetch = FetchType.LAZY)
     private List<RSSSource> rssSources;
 
     /**
@@ -44,4 +45,10 @@ public class MobiusTopic extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<MobiusTag> mobiusTags;
 
+    /**
+     * 其他控制字段
+     */
+    @Lob
+    @Column(name = "json_optional_extra_fields")
+    private String jsonOptionalExtraFields;
 }

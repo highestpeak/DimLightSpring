@@ -1,6 +1,7 @@
 package com.highestpeak.dimlight.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Queues;
 import com.highestpeak.dimlight.exception.ErrorMsgException;
 import com.highestpeak.dimlight.model.entity.MobiusTask;
 import com.highestpeak.dimlight.model.entity.RSSSource;
@@ -30,6 +31,8 @@ public class ProcessService {
     private RssContentItemService rssContentItemService;
     @Resource
     private RSSSourceRepository rssSourceRepository;
+    @Resource
+    private ContentItemService contentItemService;
 
     /**
      * 处理特定rss被拉取到的item
@@ -48,47 +51,50 @@ public class ProcessService {
         }
 
         InfoMessages infoMessages = new InfoMessages();
+
+        // 构建处理队列
+        Queue<InfoProcess> infoProcessQueue;
         try {
             // 读取rss的jsonExtra参数进行process
-            // 构建处理队列
-            Queue<InfoProcess> infoProcessQueue = ProcessUtils.buildProcessQueue(
+            infoProcessQueue = ProcessUtils.buildProcessQueue(
                     rssSource.getJsonOptionalExtraFields(), processMap
             );
+            if (infoProcessQueue.isEmpty()) {
+                infoMessages.addInfoMsg("rss没有json处理字段,不需要进行任何任务处理, rss:" + rssSource.getId());
+                return infoMessages;
+            }
+        } catch (JsonProcessingException e) {
+            throw new ErrorMsgException(
+                    InfoMessages.buildExceptionMsg("解析rss的json字段的任务处理字段时出现错误, rss:" + rssSource.getId(), e)
+            );
+        }
 
-            // 按顺序处理xml,遇到错误即终止处理
-            List<ProcessContext.XmlItemWithId> result;
+        // 按顺序处理xml,遇到错误即终止处理
+        InfoProcess nextProcess = infoProcessQueue.peek();
+        try {
             while (infoProcessQueue.size() > 0) {
-                InfoProcess nextProcess = infoProcessQueue.poll();
-                try {
-                    nextProcess.process(processContext);
-                    // fixme: 注意这里不是保存到rssContentItem，是保存到最终可读的内容里去
-                    result = processContext.getXmlItemList();
-                } catch (Exception exception) {
-                    String processClassName = nextProcess.getClass().getName();
-                    String exceptionMsg = InfoMessages.buildExceptionMsg(
-                            "rssXml处理错误,处理名:" + processClassName +
-                                    ", 未进行的任务处理:" + ProcessUtils.remainProcessNames(infoProcessQueue),
-                            exception
-                    );
-                    throw new ErrorMsgException(exceptionMsg);
-                }
+                nextProcess = infoProcessQueue.poll();
+                nextProcess.process(processContext);
                 // 结果全都被处理没了，所以不需要继续处理了
-                if (result.size() <= 0) {
+                if (processContext.isResultEmpty()) {
                     infoMessages.addInfoMsg(
                             "rssXml已经全部被处理，剩余未进行的任务处理：" + ProcessUtils.remainProcessNames(infoProcessQueue)
                     );
                     break;
                 }
             }
-
-            // 记录处理后结果到数据库
-            // fixme: 注意这里不是保存到rssContentItem，是保存到最终可读的内容里去
-            rssContentItemService.saveRssXml(rssSource, processContext.getXmlItemList());
-        } catch (JsonProcessingException e) {
-            throw new ErrorMsgException(
-                    InfoMessages.buildExceptionMsg("解析rss的json字段的任务处理字段时出现错误, rss:" + rssSource.getId(), e)
+        } catch (Exception exception) {
+            String processClassName = nextProcess.getClass().getName();
+            String exceptionMsg = InfoMessages.buildExceptionMsg(
+                    "rssXml处理错误,处理名:" + processClassName +
+                            ", 未进行的任务处理:" + ProcessUtils.remainProcessNames(infoProcessQueue),
+                    exception
             );
+            throw new ErrorMsgException(exceptionMsg);
         }
+
+        // 记录处理后结果到数据库
+        contentItemService.convertToContentItemAndSave(processContext);
 
         infoMessages.addInfoMsg("处理完成");
         return infoMessages;

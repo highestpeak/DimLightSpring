@@ -103,8 +103,6 @@ public class TopicService {
     public Object getTopicList(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "id");
         Page<MobiusTopic> topicPage = topicRepository.findAll(pageable);
-        //todo:通过json构造正确的返回体
-        //topicPage.getContent().forEach(MobiusTopic::removeItemsFromEntity);
         return topicPage;
     }
 
@@ -149,7 +147,7 @@ public class TopicService {
         return rootNode;
     }
 
-    public Object getTopicById(int topicId) {
+    public MobiusTopic getTopicById(int topicId) {
         return topicRepository.findById(topicId).orElse(null);
     }
 

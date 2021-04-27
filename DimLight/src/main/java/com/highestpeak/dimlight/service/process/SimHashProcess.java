@@ -13,6 +13,7 @@ import java.util.Map;
  * {@link SimHashPlusHammingDistanceTextSimilarity simhash}
  * https://github.com/sing1ee/simhash-java
  * simhash算法https://www.cnblogs.com/sddai/p/10088007.html
+ * todo: 比较的时候采用hashmap比较，例如hashmap存储simhash的前8位，然后查找的时候直接查找比较，具体见上链接
  */
 public class SimHashProcess implements InfoProcess{
     private int hashBitCount = 128;
