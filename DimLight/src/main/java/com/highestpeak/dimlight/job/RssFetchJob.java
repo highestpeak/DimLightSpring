@@ -16,6 +16,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import javax.annotation.Resource;
@@ -35,6 +36,11 @@ public class RssFetchJob extends QuartzJobBean {
     private TaskRepository taskRepository;
     @Resource
     private RssContentItemService rssContentItemService;
+    /**
+     * todo： 无用，请在测试后删除
+     */
+    @Value("${processOpen:false}")
+    private boolean processOpen = false;
 
     @Setter
     private int rssSourceId;
@@ -64,7 +70,7 @@ public class RssFetchJob extends QuartzJobBean {
             // 进行处理
             if (RSSXml.isItemsBlank(processContext.getOriginXml())) {
                 infoMessages.addInfoMsg("没有拉取到内容 id:" + rssSourceId);
-            } else {
+            } else if (processOpen){
                 // 处理前准备
                 RSSXml originXml = processContext.getOriginXml();
                 // 进行处理

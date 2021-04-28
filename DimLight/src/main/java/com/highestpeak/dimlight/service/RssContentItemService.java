@@ -191,7 +191,7 @@ public class RssContentItemService {
         return null;
     }
 
-    public Object getTargetRssContentItem(int rssId, int num) {
+    public List<RSSContentItem> getTargetRssContentItem(int rssId, int num) {
         Optional<RSSSource> rssSourceOptional = rssSourceRepository.findById(rssId);
         if (!rssSourceOptional.isPresent()) {
             throw new ErrorMsgException("该rss不存在");

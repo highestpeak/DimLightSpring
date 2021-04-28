@@ -74,7 +74,7 @@ public class DuplicateRemoveProcess implements InfoProcess {
 
     }
 
-    private int hammingDistance(String simHash1, String simHash2) {
+    public int hammingDistance(String simHash1, String simHash2) {
         if (simHash1.length() != simHash2.length()) {
             return -1;
         }

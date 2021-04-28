@@ -9,5 +9,5 @@ public interface TaskRepository extends PagingAndSortingRepository<MobiusTask,In
 
     List<MobiusTask> findByTaskType(int type);
 
-    MobiusTask findByTaskTypeAndTaskOperator(int taskType, int taskOperator);
+    MobiusTask findTopByTaskTypeAndTaskOperator(int taskType, int taskOperator);
 }

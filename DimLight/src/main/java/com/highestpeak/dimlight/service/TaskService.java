@@ -34,6 +34,20 @@ public class TaskService {
     @Resource
     private TaskRepository taskRepository;
 
+    public RssFetchTaskParams getSampleTaskParams(int rssId) {
+        RssFetchTaskParams rssFetchTaskParams = new RssFetchTaskParams();
+        rssFetchTaskParams.setFetchNow(true);
+        rssFetchTaskParams.setStartTask(true);
+        rssFetchTaskParams.setAutoDownload(false);
+        rssFetchTaskParams.setDescUser("sample");
+        rssFetchTaskParams.setCacheCycle(7);
+        rssFetchTaskParams.setGroup("sample");
+        rssFetchTaskParams.setName("sample_"+rssId);
+        rssFetchTaskParams.setSchedule("0 0 2 * * ?");
+        rssFetchTaskParams.setRssSourceId(rssId);
+        return rssFetchTaskParams;
+    }
+
     /**
      * 新建和更新RSSTask
      */
@@ -103,7 +117,7 @@ public class TaskService {
     }
 
     public MobiusTask getTaskByRssId(Integer rssId) {
-        return taskRepository.findByTaskTypeAndTaskOperator(TaskEnum.SIMPLE_RSS_TASK.getType(), rssId);
+        return taskRepository.findTopByTaskTypeAndTaskOperator(TaskEnum.SIMPLE_RSS_TASK.getType(), rssId);
     }
 
     /**

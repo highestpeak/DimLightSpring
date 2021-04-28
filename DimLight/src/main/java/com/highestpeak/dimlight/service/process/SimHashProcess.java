@@ -3,6 +3,7 @@ package com.highestpeak.dimlight.service.process;
 import com.google.common.collect.Maps;
 import com.highestpeak.dimlight.model.pojo.ProcessContext;
 import org.apdplat.word.analysis.SimHashPlusHammingDistanceTextSimilarity;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -12,11 +13,12 @@ import java.util.Map;
  * 计算词项列表的simhash值
  * {@link SimHashPlusHammingDistanceTextSimilarity simhash}
  * https://github.com/sing1ee/simhash-java
- * simhash算法https://www.cnblogs.com/sddai/p/10088007.html
+ * simhash算法 https://www.cnblogs.com/sddai/p/10088007.html
  * todo: 比较的时候采用hashmap比较，例如hashmap存储simhash的前8位，然后查找的时候直接查找比较，具体见上链接
  */
+@Component
 public class SimHashProcess implements InfoProcess{
-    private int hashBitCount = 128;
+    private int hashBitCount = 32;
 
     @Override
     public void process(ProcessContext processContext) {
@@ -33,10 +35,10 @@ public class SimHashProcess implements InfoProcess{
         }
     }
 
-    private String simHash(List<DescWordSegmentProcess.WordInfo> words) {
+    public String simHash(List<DescWordSegmentProcess.WordInfo> words) {
         float[] hashBit = new float[hashBitCount];
         words.forEach(word -> {
-            float weight = word.getWeight();
+            float weight = word.getCount();
             BigInteger hash = hash(word.getWord());
             for (int i = 0; i < hashBitCount; i++) {
                 BigInteger bitMask = new BigInteger("1").shiftLeft(i);

@@ -49,6 +49,8 @@ public class RSSSourceService {
     private TopicRepository topicRepository;
     @Resource
     private RssFetchService rssFetchService;
+    @Resource
+    private TaskService taskService;
 
     //----------------crud----------------//
 
@@ -121,6 +123,9 @@ public class RSSSourceService {
                 rssSource.setDescParse(rssXml.getDescription());
             }
             RSSSource savedSource = rssSourceRepository.save(rssSource);
+            if (rssSourceParams.isStartTaskNow()) {
+                taskService.newOrUpdateRssTask(taskService.getSampleTaskParams(savedSource.getId()));
+            }
         } catch (ErrorMsgException e) {
             msg.mergeMsg(e.getInfoMessages());
         } catch (Exception e) {

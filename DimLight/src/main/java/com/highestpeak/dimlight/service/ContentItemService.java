@@ -1,12 +1,7 @@
 package com.highestpeak.dimlight.service;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.highestpeak.dimlight.model.entity.BaseEntity;
-import com.highestpeak.dimlight.model.entity.MobiusContentItem;
-import com.highestpeak.dimlight.model.entity.MobiusTopic;
-import com.highestpeak.dimlight.model.entity.RSSSource;
-import com.highestpeak.dimlight.model.enums.OriginContentTypeEnum;
+import com.highestpeak.dimlight.model.entity.*;
 import com.highestpeak.dimlight.model.pojo.ProcessContext;
 import com.highestpeak.dimlight.repository.MobiusContentItemRepository;
 import org.springframework.stereotype.Service;
@@ -37,23 +32,26 @@ public class ContentItemService {
                         Function.identity()
                 ));
         //.map(BaseEntity::getId)
-                //.collect(Collectors.toList());
-        List<MobiusContentItem> mobiusContentItemList = mobiusContentItemRepository.findByOriginContentTypeAndOriginSourceIdIn(
-                OriginContentTypeEnum.RSS.getType(), Lists.newArrayList(rssSourceMap.keySet())
-        );
-        Map<Integer,List<Integer>> rssWithItsItems = Maps.newHashMapWithExpectedSize(mobiusContentItemList.size());
-        for (MobiusContentItem mobiusContentItem : mobiusContentItemList) {
-            int originSourceId = mobiusContentItem.getOriginSourceId();
-            if (!rssWithItsItems.containsKey(originSourceId)) {
-                rssWithItsItems.put(originSourceId, Lists.newArrayList());
-            }
-            List<Integer> itemIds = rssWithItsItems.get(originSourceId);
-            itemIds.add(mobiusContentItem.getId());
+        //.collect(Collectors.toList());
+        Map<Integer, List<RSSContentItem>> contentItemMap = Maps.newHashMap();
+        for (Map.Entry<Integer, RSSSource> rssSourceEntry : rssSourceMap.entrySet()) {
+            contentItemMap.put(rssSourceEntry.getKey(), rssSourceEntry.getValue().getContentItems());
         }
+
+        List<RSSContentItem> rssContentItems = contentItemMap.values()
+                .stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        Map<Integer, List<Integer>> rssWithItsItems = contentItemMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        (entry) -> entry.getValue().stream().map(BaseEntity::getId).collect(Collectors.toList())
+                ));
 
         Map<String, Object> resultMap = Maps.newHashMap();
         resultMap.put("rssSource", rssSourceMap);
-        resultMap.put("contentItem", mobiusContentItemList);
+        resultMap.put("contentItem", rssContentItems);
         resultMap.put("rssWithItsItems", rssWithItsItems);
         return resultMap;
     }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.URL;
 
 import lombok.Data;
@@ -44,4 +45,10 @@ public class RSSSourceParams {
      * 校验是否符合 json 格式
      */
     private String jsonOptionalExtraFields;
+
+    /**
+     * 是否立刻启动task
+     * todo： 这里暂时是写死的
+     */
+    private boolean startTaskNow = true;
 }

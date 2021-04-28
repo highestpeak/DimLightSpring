@@ -30,6 +30,37 @@ public class ProcessController {
         return processService.fetchAllRssNow();
     }
 
+    @GetMapping("/rss_item_summary")
+    public Object summaryExtractOfRss(@RequestParam("rssId") String rssId) {
+        return processService.summaryExtractOfRss(rssId);
+    }
+
+    @GetMapping("/rss_item_title_word_segment")
+    public Object titleWordSegment(@RequestParam("rssId") String rssId) {
+        return processService.titleWordSegment(rssId);
+    }
+
+    @GetMapping("/rss_item_desc_word_segment")
+    public Object descWordSegment(@RequestParam("rssId") String rssId) {
+        return processService.descWordSegment(rssId);
+    }
+
+    @GetMapping("/rss_item_html_tag_remove")
+    public Object rssHtmlTagRemove(@RequestParam("rssId") String rssId) {
+        return processService.rssHtmlTagRemove(rssId);
+    }
+
+    @GetMapping("/rss_item_regx_filter")
+    public Object rssItemRegxFilter(@RequestParam("rssId") String rssId) {
+        return processService.rssItemRegxFilter(rssId);
+    }
+
+    @GetMapping("/topic_duplicate_remove")
+    public Object topicDuplicateRemove(@RequestParam("topicId") String topicId) {
+        return processService.topicDuplicateRemove(topicId);
+    }
+
+
     /**
      * 拉取指定RSS源
      * future: 这个不应该用get，但是时间所迫，就先这样了
