@@ -31,12 +31,12 @@ class DimLightRssAdminApplicationTests {
 
     @Test
     void contextLoads() {
-        RSSContentItem rssContentItem = contentItemRepository.findById(51).orElse(null);
-        String htmlDesc = rssContentItem.getDescParse();
-        String parsedHtmlDesc = Jsoup.parse(htmlDesc).text();
-        // 双向最大匹配算法：BidirectionalMaximumMatching即Ngram算法
-        List<Word> words = WordSegmenter.seg(parsedHtmlDesc, SegmentationAlgorithm.BidirectionalMaximumMatching);
-        System.out.println("end");
+        //RSSContentItem rssContentItem = contentItemRepository.findById(51).orElse(null);
+        //String htmlDesc = rssContentItem.getDescParse();
+        //String parsedHtmlDesc = Jsoup.parse(htmlDesc).text();
+        //// 双向最大匹配算法：BidirectionalMaximumMatching即Ngram算法
+        //List<Word> words = WordSegmenter.seg(parsedHtmlDesc, SegmentationAlgorithm.BidirectionalMaximumMatching);
+        //System.out.println("end");
         // resort
         // ,,,
         ////词频统计设置
@@ -71,4 +71,78 @@ class DimLightRssAdminApplicationTests {
         }
         System.out.println("test");
     }
+
+
+    @Test
+    void findSourceByUrl() {
+    }
+
+    @Test
+    void findSourceByName() {
+    }
+
+    @Test
+    void findTagByNameList() {
+    }
+
+    @Test
+    void findTaskByType() {
+    }
+
+    @Test
+    void findTaskByTypeAndExcutor() {
+    }
+
+    @Test
+    void findItemByGuid() {
+    }
+
+    @Test
+    void delOutOfTimeContentItem() {
+    }
+
+    @Test
+    void fetchRss() {
+    }
+
+    @Test
+    void fetchRssProxy() {
+    }
+
+    @Test
+    void fetchRssCron() {
+    }
+
+    @Test
+    void terminateTask() {
+    }
+
+    @Test
+    void delTask() {
+    }
+
+    @Test
+    void resumeTask() {
+    }
+
+    @Test
+    void segmentTitle() {
+    }
+
+    @Test
+    void segmentDescContent() {
+    }
+
+    @Test
+    void regxFilter() {
+    }
+
+    @Test
+    void htmlTagRemove() {
+    }
+
+    @Test
+    void resortNews() {
+    }
+
 }

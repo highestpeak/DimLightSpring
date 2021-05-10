@@ -5,7 +5,7 @@ spring:
   datasource:
     platform: MYSQL
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/dim_light?serverTimezone=GMT%2B8&useSSL=false&createDatabaseIfNotExist=true
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/dim_light?serverTimezone=GMT%2B8&useSSL=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
     username: root
     password: 123456
     #表明使用的数据库平台是 sqlite
