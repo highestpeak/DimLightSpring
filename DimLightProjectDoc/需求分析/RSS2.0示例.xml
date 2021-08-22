@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 声明当前文件为xml文档【必】-->
+<rss version="2.0">
+    <!-- 声明当前文件内容为rss格式文件,属性version（必须）指定当前rss版本【必】-->
+    <channel>
+        <!-- 【必】【必】【必】【必】【必】【必】【必】【必】 -->
+        <!-- 固有节点【必】 -->
+        <title>新闻中心-国内焦点新闻</title>
+        <!-- 对网站和当前RSS 文件的简短描述【必】 -->
+        <description>国内焦点新闻列表</description>
+        <!-- 对当前RSS文件的描述【必】 -->
+        <link>http://news.sina.com.cn/china/index.shtml</link>
+        <!-- 网站主页链接【必】 -->
+        <!-- 【必】【必】【必】【必】【必】【必】【必】【必】 -->
+
+        <copyright>Copyright 1996 - 2005 SINA Inc. All Rights Reserved</copyright>
+        <!-- 声明版权 -->
+        <pubDate>Wed, 26 Apr 2006 01:45:05 GMT</pubDate>
+        <!-- 当前RSS最后发布的时间 -->
+        <ttl>5</ttl>
+        <!-- (ttl = time to live) 在刷新前当前RSS在cache中可以保存多长时间（分钟） -->
+        <image>
+            <!-- 为当前RSS添加图片 -->
+            <title>新闻中心-国内焦点</title>
+            <!-- 图片标题对图片的简单描述【必】-->
+            <link>http://news.sina.com.cn/china</link>
+            <!-- 网站链接地址【必】 -->
+            <url>http://image2.sina.com.cn/dy/gn/in10.jpg</url>
+            <!-- 图片的链接地址【必】 -->
+            <!-- 可选元素包括<width>、<height>、<description> -->
+        </image>
+        <language>zh-cn</language>
+        <!-- 当前RSS使用的语言 -->
+        <generator>WWW.SINA.COM.CN</generator>
+        <!-- 当RSS文件为自动创建时多存在此节点（RSS文件由什么创建）-->
+        <category/>
+        <!-- 声明当前RSS内容的种类 -->
+        <webMaster>i@diygod.me (DIYgod)</webMaster>
+        <!-- <webMaster> 元素定义 feed 网络管理员的电子邮件地址 -->
+
+        <item>
+            <!-- 【必】【必】【必】【必】【必】【必】【必】【必】 -->
+            <!-- 一条信息 -->
+            <title>最高检：严惩公务员利用审批等权力索贿受贿</title>
+            <!-- 新闻标题【必】 -->
+            <description>新华网沈阳4月25日电 (记者 杨维汉、范春生)
+                最高人民检察院常务副检察长张耕说，对于国家公务员在商业活动中利用职权谋取非法利益、索贿受贿的案件，必须发现一起，坚决查处一起。特别是对国家公务员利用行政审批权、行政执法权和司法权执法犯法、贪赃枉法、索贿受贿，构成犯....
+            </description>
+            <!-- 新闻的简单描述【必】 -->
+            <link>http://news.sina.com.cn/c/l/2006-04-26/08029720281.shtml</link>
+            <!-- 新闻链接【必】  -->
+            <!-- 【必】【必】【必】【必】【必】【必】【必】【必】 -->
+
+            <guid>http://news.sina.com.cn/c/l/2006-04-26/08029720281.shtml</guid>
+            <!-- guid>GUID=Globally Unique Identifier 为当前新闻指定一个全球唯一标示 -->
+            <pubDate>Wed, 26 Apr 2006 00:02:53 GMT</pubDate>
+            <!-- 新闻最后发布时间 -->
+            <category>国内焦点新闻</category>
+            <!-- 新闻类别（一个或多个） -->
+            <author>WWW.SINA.COM.CN</author>
+            <!-- 新闻作者 -->
+            <comments/>
+            <!-- 新闻注释 -->
+
+            <!-- 此外还有 enclosure、source 等 -->
+        </item>
+    </channel>
+</rss>
